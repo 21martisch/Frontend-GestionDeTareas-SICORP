@@ -73,8 +73,8 @@ const AuthForm = ({ type }) => {
   });
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-purple-300 to-purple-700">
-      <Card className="w-96 p-8 bg-white rounded-2xl shadow-xl">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-purple-300 to-purple-700 p-4">
+      <Card className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
         <h2 className="text-center text-2xl font-semibold text-gray-800 mb-5">
           {isLogin ? "Iniciar Sesión" : "Registro"}
         </h2>
@@ -140,7 +140,7 @@ const AuthForm = ({ type }) => {
         </p>
       </Card>
     </div>
-  );
+  )
 };
 
 export default AuthForm;
