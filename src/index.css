@@ -3,3 +3,37 @@
 @tailwind utilities;
 
 @import "@material-tailwind/react/tailwind.css";
+
+.sicorp-login-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #A8E6CF 0%, #D0F0FD 50%, #D1C4E9 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sicorp-login-card {
+  background: #fff;
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  padding: 2.5rem 2rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.sicorp-logo {
+  width: 110px;
+  margin: 0 auto 1.5rem auto;
+  display: block;
+}
+
+.sicorp-btn {
+  background: #A8E6CF !important;
+  color: #2e5d6b !important;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.sicorp-btn:hover {
+  background: #D0F0FD !important;
+}

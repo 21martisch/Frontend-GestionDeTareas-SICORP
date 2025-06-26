@@ -1,18 +1,19 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const useAuth = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const token = user ? user.token : null;
+  const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
 
   useEffect(() => {
-    if (!token) {
+    if (!user || !token) {
       navigate("/login");
     }
-  }, [token, navigate]);
+  }, [user, token, navigate]);
 
-  return token;
+  return { user, token };
 };
 
 export default useAuth;

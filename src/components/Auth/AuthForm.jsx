@@ -1,13 +1,24 @@
-import React from "react";
+import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button, Input, Card } from "@material-tailwind/react";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { useDispatch } from "react-redux";
+import { login } from "../../store/slices/authSlice";
+import logoSicorp from "../../assets/sicorp-logo.png";
+import { Visibility, VisibilityOff } from "@mui/icons-material"; 
+
+const pastelBg = "linear-gradient(135deg, #A8E6CF 0%, #D0F0FD 50%, #D1C4E9 100%)";
+const pastelBtn = "#A8E6CF";
+const pastelBtnHover = "#D0F0FD";
+const pastelText = "#2e5d6b";
 
 const AuthForm = ({ type }) => {
   const isLogin = type === "login";
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
 
   const validationSchema = yup.object({
     name: !isLogin
@@ -44,17 +55,19 @@ const AuthForm = ({ type }) => {
         const payload = isLogin
           ? { email: values.email, password: values.password }
           : { name: values.name, email: values.email, password: values.password };
-        
 
         const response = await axios.post(`${import.meta.env.VITE_API_URL}${endpoint}`, payload);
 
-        if (response.data) {
+        if (response.data && response.data.token) {
           if (isLogin) {
-            localStorage.setItem("user", JSON.stringify(response.data));
+            const { token, ...user } = response.data;
+            dispatch(login({ user, token }));
             navigate("/dashboard");
           } else {
             navigate("/login");
           }
+        } else {
+          setErrors({ submit: "Respuesta inesperada del servidor" });
         }
       } catch (err) {
         if (err.response) {
@@ -73,9 +86,23 @@ const AuthForm = ({ type }) => {
   });
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-purple-300 to-purple-700 p-4">
-      <Card className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
-        <h2 className="text-center text-2xl font-semibold text-gray-800 mb-5">
+    <div
+      className="flex justify-center items-center min-h-screen"
+      style={{ background: pastelBg }}
+    >
+      <Card
+        className="w-full max-w-md p-8 rounded-2xl shadow-xl"
+        style={{ background: "#fff", borderRadius: "2rem" }}
+      >
+        <img
+          src={logoSicorp}
+          alt="SICORP Logo"
+          style={{ width: 110, margin: "0 auto 1.5rem auto", display: "block" }}
+        />
+        <h2
+          className="text-center text-2xl font-semibold mb-5"
+          style={{ color: pastelText }}
+        >
           {isLogin ? "Iniciar Sesión" : "Registro"}
         </h2>
 
@@ -91,6 +118,8 @@ const AuthForm = ({ type }) => {
                 label="Nombre"
                 {...formik.getFieldProps("name")}
                 error={formik.touched.name && Boolean(formik.errors.name)}
+                color="teal"
+                style={{ background: "#F8FFFB" }}
               />
               {formik.touched.name && formik.errors.name && (
                 <p className="text-red-500 text-sm mt-1">{formik.errors.name}</p>
@@ -103,18 +132,35 @@ const AuthForm = ({ type }) => {
               label="Correo Electrónico"
               {...formik.getFieldProps("email")}
               error={formik.touched.email && Boolean(formik.errors.email)}
+              color="teal"
+              style={{ background: "#F8FFFB" }}
             />
             {formik.touched.email && formik.errors.email && (
               <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
             )}
           </div>
-          <div>
+          <div className="relative">
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               label="Contraseña"
               {...formik.getFieldProps("password")}
               error={formik.touched.password && Boolean(formik.errors.password)}
+              color="teal"
+              style={{ background: "#F8FFFB" }}
+              className="pr-10"
             />
+            <button
+              type="button"
+              tabIndex={-1}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
+                <VisibilityOff fontSize="small" />
+              ) : (
+                <Visibility fontSize="small" />
+              )}
+            </button>
             {formik.touched.password && formik.errors.password && (
               <p className="text-red-500 text-sm mt-1">{formik.errors.password}</p>
             )}
@@ -122,25 +168,22 @@ const AuthForm = ({ type }) => {
           <Button
             type="submit"
             fullWidth
-            className="bg-purple-600 hover:bg-purple-700 transition-all duration-200"
+            style={{
+              background: pastelBtn,
+              color: pastelText,
+              fontWeight: "bold",
+              marginTop: "1rem",
+              transition: "background 0.2s",
+            }}
+            className="hover:bg-[#D0F0FD]"
             disabled={formik.isSubmitting}
           >
             {formik.isSubmitting ? "Cargando..." : isLogin ? "Ingresar" : "Registrarse"}
           </Button>
         </form>
-
-        <p className="mt-4 text-center text-gray-600">
-          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
-          <span
-            className="text-purple-600 cursor-pointer hover:underline"
-            onClick={() => navigate(isLogin ? "/register" : "/login")}
-          >
-            {isLogin ? "Regístrate" : "Inicia sesión"}
-          </span>
-        </p>
       </Card>
     </div>
-  )
+  );
 };
 
 export default AuthForm;
