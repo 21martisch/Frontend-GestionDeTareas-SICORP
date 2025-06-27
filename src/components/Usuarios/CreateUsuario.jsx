@@ -84,7 +84,6 @@ const CreateUsuario = ({ usuario, onClose }) => {
           onChange={handleChange}
           required
           type="email"
-          disabled={!!usuario}
         />
         {!usuario && (
           <TextField
