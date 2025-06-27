@@ -271,16 +271,11 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
 
   const handleSubmitTicket = (formData) => {
     if (initialTicket && initialTicket.id) {
-      const plainData = {};
-      formData.forEach((value, key) => {
-        plainData[key] = value;
-      });
-      updateTicketMutation.mutate({ id: initialTicket.id, formData: plainData });
+      updateTicketMutation.mutate({ id: initialTicket.id, formData });
     } else {
       handleAddTicket(formData);
     }
   };
-
   const handleOpenHorasModal = (ticket) => {
     setTicketHoras(ticket);
     setHorasModalOpen(true);
