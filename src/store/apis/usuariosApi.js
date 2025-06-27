@@ -25,7 +25,7 @@ export const deleteUsuario = (id, token) =>
 
 export const changeUsuarioPassword = (usuarioId, password, token) =>
   axios.put(
-    `${API_URL}/usuarios/${usuarioId}/password`,
+    `${API_URL}/users/${usuarioId}/password`,
     { password },
     { headers: { Authorization: `Bearer ${token}` } }
   );
