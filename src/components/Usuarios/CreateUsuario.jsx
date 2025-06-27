@@ -57,7 +57,11 @@ const CreateUsuario = ({ usuario, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    mutation.mutate(form);
+    let data = { ...form };
+    if (usuario) {
+      delete data.password;
+    }
+    mutation.mutate(data);
   };
 
   return (
