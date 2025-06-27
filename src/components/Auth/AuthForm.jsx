@@ -34,11 +34,7 @@ const AuthForm = ({ type }) => {
       .required("El correo electrónico es obligatorio"),
     password: yup
       .string()
-      .required("La contraseña es obligatoria")
-      .min(8, "La contraseña debe tener al menos 8 caracteres")
-      .matches(/[A-Z]/, "Debe contener al menos una letra mayúscula")
-      .matches(/[0-9]/, "Debe contener al menos un número")
-      .matches(/[\W]/, "Debe contener al menos un carácter especial"),
+      .required("La contraseña es obligatoria"),
   });
 
   const formik = useFormik({
