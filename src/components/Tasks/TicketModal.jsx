@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box, TextField, Button, MenuItem } from "@mui/material";
+import { Modal, Box, TextField, Button, MenuItem, Alert } from "@mui/material";
 
 const TicketModal = ({
   open,
@@ -14,6 +14,7 @@ const TicketModal = ({
   const [sistemaId, setSistemaId] = useState("");
   const [clienteId, setClienteId] = useState("");
   const [archivoAdjunto, setArchivoAdjunto] = useState(null);
+  const [alerta, setAlerta] = useState("");
 
   const sistemasFiltrados = clienteId
     ? sistemas.filter(s =>
@@ -35,20 +36,26 @@ const TicketModal = ({
       setClienteId("");
       setArchivoAdjunto(null);
     }
+    setAlerta("");
   }, [initialTicket, open]);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    if (!titulo.trim() || !sistemaId) {
+      setAlerta("Debes completar el título y seleccionar un sistema.");
+      return;
+    }
+    setAlerta("");
     const formData = new FormData();
     formData.append("titulo", titulo);
-    formData.append("descripcion", descripcion);
+    if (descripcion) formData.append("descripcion", descripcion);
     formData.append("sistemaId", sistemaId);
     if (archivoAdjunto) formData.append("archivoAdjunto", archivoAdjunto);
     if (initialTicket?.id) formData.append("id", initialTicket.id);
     if (clientes.length > 0 && clienteId) formData.append("clienteId", clienteId);
 
     handleSubmit(formData);
-    console.log("Datos enviados:", formData);
+    // console.log("Datos enviados:", formData);
   };
 
   return (
@@ -68,6 +75,11 @@ const TicketModal = ({
         }}
         encType="multipart/form-data"
       >
+        {alerta && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {alerta}
+          </Alert>
+        )}
         <TextField
           fullWidth
           margin="normal"
