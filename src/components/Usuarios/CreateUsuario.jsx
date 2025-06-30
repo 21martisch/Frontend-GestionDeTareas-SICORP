@@ -10,7 +10,6 @@ import {
 
 const roles = [
   { value: "admin", label: "Admin" },
-  { value: "cliente", label: "Cliente" },
 ];
 
 const CreateUsuario = ({ usuario, onClose }) => {
@@ -19,7 +18,7 @@ const CreateUsuario = ({ usuario, onClose }) => {
     apellido: "",
     email: "",
     password: "",
-    rol: "cliente",
+    rol: "admin",
   });
   const [showPassword, setShowPassword] = useState(false);
   const token = useSelector((state) => state.auth.token);
@@ -32,7 +31,7 @@ const CreateUsuario = ({ usuario, onClose }) => {
         apellido: usuario.apellido || "",
         email: usuario.email || "",
         password: "",
-        rol: usuario.rol || "cliente",
+        rol: usuario.rol || "admin",
       });
     }
   }, [usuario]);

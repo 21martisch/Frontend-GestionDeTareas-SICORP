@@ -26,9 +26,9 @@ const Usuarios = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     const token = useSelector((state) => state.auth.token);
 
     const { data, isLoading } = useQuery({
-        queryKey: ["usuarios", page, rowsPerPage],
+        queryKey: ["usuarios", page, rowsPerPage, "admin"],
         queryFn: () =>
-            getUsuarios({ page: page + 1, limit: rowsPerPage }, token).then(res => res.data),
+            getUsuarios({ page: page + 1, limit: rowsPerPage, rol: "admin" }, token).then(res => res.data),
     });
 
     const usuarios = data?.users || [];
@@ -118,7 +118,8 @@ const Usuarios = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                                 <TableCell colSpan={6} align="center">Cargando...</TableCell>
                             </TableRow>
                         ) : (
-                            usuarios.map((usuario) => (
+                            usuarios
+                            .map((usuario) => (
                                 <TableRow key={usuario.id}>
                                     <TableCell>{usuario.nombre}</TableCell>
                                     <TableCell>{usuario.apellido}</TableCell>

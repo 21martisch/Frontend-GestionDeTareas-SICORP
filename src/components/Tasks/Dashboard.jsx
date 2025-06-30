@@ -258,7 +258,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   };
 
   const handleTomarTicket = (ticketId) => {
-    tomarTicketMutation.mutate({ ticketId }); 
+    tomarTicketMutation.mutate({ ticketId, usuarioId: user.user.id }); 
   };
 
   const handleAsignarTicket = (ticketId, usuarioId) => {

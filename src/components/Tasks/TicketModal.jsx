@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Box, TextField, Button, MenuItem, Alert } from "@mui/material";
 
+const prioridades = [
+  { value: "Alta", label: "Alta" },
+  { value: "Media", label: "Media" },
+  { value: "Baja", label: "Baja" },
+];
+
+const categorias = [
+  { value: "Soporte", label: "Soporte" },
+  { value: "Desarrollo", label: "Desarrollo" },
+  { value: "Modificación", label: "Modificación" },
+];
+
 const TicketModal = ({
   open,
   handleClose,
@@ -13,7 +25,9 @@ const TicketModal = ({
   const [descripcion, setDescripcion] = useState("");
   const [sistemaId, setSistemaId] = useState("");
   const [clienteId, setClienteId] = useState("");
-  const [archivoAdjunto, setArchivoAdjunto] = useState(null);
+  const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
+  const [prioridad, setPrioridad] = useState("");
+  const [categoriaTipo, setCategoriaTipo] = useState("");
   const [alerta, setAlerta] = useState("");
 
   const sistemasFiltrados = clienteId
@@ -29,12 +43,16 @@ const TicketModal = ({
       setDescripcion(initialTicket.descripcion || "");
       setSistemaId(initialTicket.sistemaId || "");
       setClienteId(initialTicket.clienteId || "");
+      setPrioridad(initialTicket.prioridad || "");
+      setCategoriaTipo(initialTicket.categoriaTipo || "");
     } else {
       setTitulo("");
       setDescripcion("");
       setSistemaId("");
       setClienteId("");
-      setArchivoAdjunto(null);
+      setArchivosAdjuntos([]);
+      setPrioridad("");
+      setCategoriaTipo("");
     }
     setAlerta("");
   }, [initialTicket, open]);
@@ -50,12 +68,17 @@ const TicketModal = ({
     formData.append("titulo", titulo);
     if (descripcion) formData.append("descripcion", descripcion);
     formData.append("sistemaId", sistemaId);
-    if (archivoAdjunto) formData.append("archivoAdjunto", archivoAdjunto);
+    formData.append("prioridad", prioridad);
+    formData.append("categoriaTipo", categoriaTipo);
+    if (archivosAdjuntos && archivosAdjuntos.length > 0) {
+      archivosAdjuntos.forEach(file => {
+        formData.append("archivosAdjuntos", file);
+      });
+    }
     if (initialTicket?.id) formData.append("id", initialTicket.id);
     if (clientes.length > 0 && clienteId) formData.append("clienteId", clienteId);
 
     handleSubmit(formData);
-    // console.log("Datos enviados:", formData);
   };
 
   return (
@@ -94,6 +117,8 @@ const TicketModal = ({
           label="Descripción"
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
+          multiline
+          minRows={3}
         />
         {clientes.length > 0 && (
           <TextField
@@ -123,17 +148,50 @@ const TicketModal = ({
             <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
           ))}
         </TextField>
+        <TextField
+          select
+          fullWidth
+          margin="normal"
+          label="Prioridad"
+          value={prioridad}
+          onChange={(e) => setPrioridad(e.target.value)}
+          required
+        >
+          {prioridades.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          fullWidth
+          margin="normal"
+          label="Categoría"
+          value={categoriaTipo}
+          onChange={(e) => setCategoriaTipo(e.target.value)}
+          required
+        >
+          {categorias.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
         <Button
           variant="contained"
           component="label"
           fullWidth
           sx={{ mt: 2, mb: 1 }}
         >
-          {archivoAdjunto ? archivoAdjunto.name : "Adjuntar archivo"}
+          {archivosAdjuntos && archivosAdjuntos.length > 0
+            ? `${archivosAdjuntos.length} archivo(s) seleccionado(s)`
+            : "Adjuntar archivos"}
           <input
             type="file"
             hidden
-            onChange={(e) => setArchivoAdjunto(e.target.files[0])}
+            multiple
+            onChange={e => setArchivosAdjuntos(prev => [...prev, ...Array.from(e.target.files)])}
           />
         </Button>
         <Button type="submit" variant="contained" color="primary" fullWidth>

@@ -7,6 +7,7 @@ import Clientes from "./components/Client/Clientes";
 import Historial from "./components/Tasks/Historial";
 import Detalle from "./components/Tasks/Detalle";
 import PrivateRoute from "./components/Private/PrivateRoute";
+import HorasContrato from "./components/HorasContrato/HorasContrato";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import Usuarios from "./components/Usuarios/Usuarios";
@@ -67,6 +68,16 @@ const App = () => {
             element={
               <Layout>
                 <Sistemas />
+              </Layout>
+            }
+          />
+        </Route>
+        <Route element={<PrivateRoute />}>
+          <Route
+            path="/horas-contrato"
+            element={
+              <Layout>
+                <HorasContrato />
               </Layout>
             }
           />

@@ -3,7 +3,7 @@ import {
   Card, Typography, IconButton, Chip, Menu, MenuItem,
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Select, InputLabel, FormControl, Box
 } from "@mui/material";
-import { Edit, Delete, PlayForWork, HourglassBottom, Loop, History, Visibility } from "@mui/icons-material";
+import { Edit, Delete, PlayForWork, HourglassBottom, Loop, History, Visibility, CheckCircleOutline } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {AccountCircle, Settings} from '@mui/icons-material';
@@ -46,7 +46,7 @@ const TicketCard = ({
   const handleMenuClose = () => setAnchorEl(null);
 
   const handleTomar = () => {
-    onTomarTicket(ticket.id);
+    onTomarTicket(ticket.id, user?.user?.id);
     handleMenuClose();
   };
 
@@ -78,22 +78,52 @@ const TicketCard = ({
   const usuariosFiltrados = usuarios.filter(u => u.rol !== "cliente");
 
   return (
-    <Card sx={{ height: 240, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 2, maxWidth: 450,width: '100%' }}>
+    <Card sx={{ height: 280, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 2, maxWidth: 450,width: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" noWrap>{ticket.titulo}</Typography>
         <Typography variant="body2" color="textSecondary">
           {new Date(ticket.fechaCreacion).toLocaleDateString()}
         </Typography>
       </Box>
+      <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+        <Chip
+          size="small"
+          label={ticket.prioridad}
+          color={
+            ticket.prioridad === "Alta"
+              ? "error"
+              : ticket.prioridad === "Media"
+              ? "warning"
+              : "success"
+          }
+          sx={{ fontWeight: 500 }}
+        />
+        <Chip
+          size="small"
+          label={ticket.categoriaTipo}
+          color="primary"
+          sx={{ fontWeight: 500, bgcolor: "#e3f2fd", color: "#1976d2" }}
+        />
+      </Box>
       <Box sx={{ mb: 1 }}>
         <Typography variant="body2" color="textSecondary">
           <AccountCircle/> {ticket.Cliente?.nombre || "-"}
         </Typography>
       </Box>
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 1 }}>
         <Typography variant="body2" color="textSecondary">
           <Settings sx={{ verticalAlign: 'middle', mr: 0.5 }} />
           {ticket.Sistema?.nombre || "-"}
+        </Typography>
+      </Box>
+      <Box sx={{ mb: 1 }}>
+        <Typography variant="body2" color="textSecondary">
+          {ticket.tomado && (
+            <>
+              <CheckCircleOutline sx={{ verticalAlign: 'middle', mr: 0.5 }} />
+              Tomado: {ticket.Usuario?.nombre || "-"}
+            </>
+          )}
         </Typography>
       </Box>
       <Box sx={{ mb: 2 }}>
@@ -117,9 +147,14 @@ const TicketCard = ({
             <Edit />
           </IconButton>
         )}
-        <IconButton onClick={() => handleDeleteTicket(ticket.id)}>
-          <Delete />
-        </IconButton>
+        {(
+          (user?.user.rol === "cliente" && ticket.Categorium.nombre === "Abierto") ||
+          (user?.user.rol !== "cliente")
+        ) && (
+          <IconButton onClick={() => handleDeleteTicket(ticket.id)}>
+            <Delete />
+          </IconButton>
+        )}
         {user?.user.rol !== "cliente" && (
           <>
             {ticket.Categorium.nombre === "Abierto"  && !ticket.tomado  && (

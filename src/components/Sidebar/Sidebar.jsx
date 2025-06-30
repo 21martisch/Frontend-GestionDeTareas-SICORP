@@ -38,7 +38,8 @@ const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
         { label: "Sistemas", action: () => { navigate("/sistemas"); } },
     ];
     const clienteOptions = [
-        { label: "Tickets", action: () => { setFilter("all"); navigate("/dashboard"); } }
+        { label: "Tickets", action: () => { setFilter("all"); navigate("/dashboard"); } },
+        { label: "Horas Consumidas", action: () => { navigate("/horas-contrato"); } },
     ];
 
     const options = user?.user.rol === "admin" ? adminOptions : clienteOptions;
