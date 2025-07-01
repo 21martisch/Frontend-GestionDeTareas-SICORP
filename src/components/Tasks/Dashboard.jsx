@@ -203,9 +203,6 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
       setHorasModalOpen(false);
       setTicketHoras(null);
     },
-    onError: () => {
-      toast.error('No se pudieron actualizar las horas');
-    }
   });
 
 
@@ -286,8 +283,12 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     setTicketHoras(null);
   };
 
-  const handleGuardarHoras = (nuevasHoras) => {
-    updateHorasMutation.mutate({ id: ticketHoras.id, horasCargadas: nuevasHoras });
+  const handleGuardarHoras = async (nuevasHoras) => {
+    try {
+      await updateHorasMutation.mutateAsync({ id: ticketHoras.id, horasCargadas: nuevasHoras });
+    } catch (err) {
+      throw err;
+    }
   };
 
   if (!user || !token) {

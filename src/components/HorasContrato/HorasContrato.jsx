@@ -19,9 +19,8 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const { data } = await getSistemas({ clienteId: user.id }, token);
+        const { data } = await getSistemas({}, token);
         setSistemas(data);
-
         const resumenesTemp = {};
         for (const sistema of data) {
           const resumen = await getResumenHorasMensual(sistema.id, token);
@@ -36,6 +35,12 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
     };
     fetchData();
   }, [user, token]);
+
+  const usuarioId = user.user.id;
+  const sistemasFiltrados = sistemas.filter(s =>
+    Array.isArray(s.Clientes) &&
+    s.Clientes.some(cliente => String(cliente.usuarioId) === String(usuarioId))
+  );
 
   const mesesDisponibles = Array.from(
     new Set(
@@ -95,7 +100,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sistemas.map(sistema => {
+                {sistemasFiltrados.map(sistema => {
                   const resumen = (resumenes[sistema.id] || []).find(
                     r => `${r.anio}-${String(r.mes).padStart(2, "0")}` === mesSeleccionado
                   );

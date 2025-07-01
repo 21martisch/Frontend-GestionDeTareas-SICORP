@@ -1,17 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box, TextField, Button } from "@mui/material";
+import { Modal, Box, TextField, Button, Alert } from "@mui/material";
 
 const HorasModal = ({ open, handleClose, handleSubmit, initialHoras }) => {
   const [horas, setHoras] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setHoras(initialHoras !== undefined && initialHoras !== null ? String(initialHoras) : "");
+    setError("");
   }, [initialHoras, open]);
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     if (horas !== "" && !isNaN(Number(horas))) {
-      handleSubmit(Number(horas));
+      try {
+        await handleSubmit(Number(horas));
+        handleClose();
+      } catch (err) {
+        setError(
+          err?.response?.data?.message ||
+          err?.message ||
+          "Error al cargar horas"
+        );
+      }
     }
   };
 
@@ -31,6 +43,7 @@ const HorasModal = ({ open, handleClose, handleSubmit, initialHoras }) => {
           p: 4,
         }}
       >
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         <TextField
           fullWidth
           margin="normal"
