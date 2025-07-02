@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, TextField, MenuItem, Box, InputAdornment, IconButton } from "@mui/material";
+import { Button, TextField, MenuItem, Box, InputAdornment, IconButton, Alert } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
@@ -21,6 +21,7 @@ const CreateUsuario = ({ usuario, onClose }) => {
     rol: "admin",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const token = useSelector((state) => state.auth.token);
   const queryClient = useQueryClient();
 
@@ -45,9 +46,19 @@ const CreateUsuario = ({ usuario, onClose }) => {
       }
     },
     onSuccess: () => {
+      setError("");
       queryClient.invalidateQueries(["usuarios"]);
       onClose();
     },
+    onError: (err) => {
+      if (err?.response?.data?.errors) {
+        setError(err.response.data.errors.join(" "));
+      } else if (err?.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Error al crear usuario");
+      }
+    }
   });
 
   const handleChange = (e) => {
@@ -66,6 +77,7 @@ const CreateUsuario = ({ usuario, onClose }) => {
   return (
     <form onSubmit={handleSubmit}>
       <Box display="flex" flexDirection="column" gap={2} mt={1}>
+        {error && <Alert severity="error">{error}</Alert>}
         <TextField
           label="Nombre"
           name="nombre"
