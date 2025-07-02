@@ -15,8 +15,8 @@ const HorasModal = ({ open, handleClose, handleSubmit, initialHoras }) => {
     setError("");
     if (horas !== "" && !isNaN(Number(horas))) {
       try {
-        await handleSubmit(Number(horas));
-        handleClose();
+        const ok = await handleSubmit(Number(horas));
+        if (ok) handleClose();
       } catch (err) {
         setError(
           err?.response?.data?.message ||

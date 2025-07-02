@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Typography, Box, CircularProgress, Button, Grid, Pagination, IconButton, Paper } from "@mui/material";
+import { Typography, Box, CircularProgress, Button, Grid, Pagination, IconButton, Paper, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import AddIcon from '@mui/icons-material/Add';
 import Sidebar from "../Sidebar/Sidebar";
@@ -35,6 +35,8 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   });
   const [horasModalOpen, setHorasModalOpen] = useState(false);
   const [ticketHoras, setTicketHoras] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingHoras, setPendingHoras] = useState(null);
 
   const {
     data: cliente,
@@ -196,7 +198,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   });
 
   const updateHorasMutation = useMutation({
-    mutationFn: ({ id, horasCargadas }) => updateHoras(id, horasCargadas, token),
+    mutationFn: ({ id, horasCargadas, forzar }) => updateHoras(id, horasCargadas, token, forzar),
     onSuccess: () => {
       queryClient.invalidateQueries(["tickets"]);
       toast.success('Horas actualizadas');
@@ -287,8 +289,30 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     try {
       await updateHorasMutation.mutateAsync({ id: ticketHoras.id, horasCargadas: nuevasHoras });
     } catch (err) {
-      throw err;
+      if (
+        err?.response?.status === 400 &&
+        err?.response?.data?.puedeForzar
+      ) {
+        setPendingHoras(nuevasHoras);
+        setShowConfirm(true);
+        return false;
+      } else {
+        throw err;
+      }
     }
+  };
+
+  const handleConfirmSi = async () => {
+    await updateHorasMutation.mutateAsync({ id: ticketHoras.id, horasCargadas: pendingHoras, forzar: true });
+    setShowConfirm(false);
+    setPendingHoras(null);
+    setHorasModalOpen(false);
+    setTicketHoras(null);
+  };
+
+  const handleConfirmNo = () => {
+    setShowConfirm(false);
+    setPendingHoras(null);
   };
 
   if (!user || !token) {
@@ -418,6 +442,16 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
             handleSubmit={handleGuardarHoras}
             initialHoras={ticketHoras?.horasCargadas}
           />
+          <Dialog open={showConfirm} onClose={handleConfirmNo}>
+            <DialogTitle>Advertencia</DialogTitle>
+            <DialogContent>
+              ¿Desea seguir consumiendo horas? Las horas restantes pueden quedar en negativo.
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleConfirmNo}>No</Button>
+              <Button onClick={handleConfirmSi} color="primary" variant="contained">Sí</Button>
+            </DialogActions>
+          </Dialog>
         </>
       )}
     </Box>

@@ -42,12 +42,10 @@ export const cambiarCategoria = (ticketId, categoriaId, token) =>
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
-export const updateHoras = (ticketId, horasCargadas, token) =>
-  axios.put(
-    `${API_URL}/tickets/${ticketId}/horas`,
-    { horasCargadas },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+export const updateHoras = (id, horasCargadas, token, forzar = false) =>
+  axios.put(`${API_URL}/tickets/${id}/horas`, { horasCargadas, forzar }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
 export const getHistorial = (ticketId, token) =>
   axios.get(`${API_URL}/tickets/${ticketId}/historial`, {

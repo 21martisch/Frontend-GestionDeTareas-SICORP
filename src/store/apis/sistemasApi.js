@@ -25,5 +25,5 @@ export const deleteSistema = (id, token) =>
 
 export const getResumenHorasMensual = (sistemaId, token) =>
   axios.get(`${API_URL}/sistemas/${sistemaId}/resumen-horas-mensual`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}` }
   });

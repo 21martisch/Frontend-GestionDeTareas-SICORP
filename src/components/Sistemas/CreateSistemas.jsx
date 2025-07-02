@@ -4,29 +4,22 @@ import {
   Button,
   TextField,
   MenuItem,
-  Checkbox,
-  ListItemText,
   InputLabel,
   Select,
   FormControl,
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import {
-  getClientes
-} from "../../store/apis/clientesApi";
-import {
-  createSistema,
-  updateSistema
-} from "../../store/apis/sistemasApi"; 
+import { getClientes } from "../../store/apis/clientesApi";
+import { createSistema, updateSistema } from "../../store/apis/sistemasApi";
 
 const CreateSistemas = ({ sistema, onClose }) => {
   const [form, setForm] = useState({
     nombre: "",
-    horasContrato: "",
     fechaDesde: "",
     fechaHasta: "",
-    clientes: [],
+    clienteId: "",
+    horasContrato: "",
   });
   const token = useSelector((state) => state.auth.token);
   const queryClient = useQueryClient();
@@ -41,10 +34,10 @@ const CreateSistemas = ({ sistema, onClose }) => {
     if (sistema) {
       setForm({
         nombre: sistema.nombre || "",
-        horasContrato: sistema.horasContrato || "",
         fechaDesde: sistema.fechaDesde ? sistema.fechaDesde.slice(0, 10) : "",
         fechaHasta: sistema.fechaHasta ? sistema.fechaHasta.slice(0, 10) : "",
-        clientes: sistema.Clientes ? sistema.Clientes.map(c => c.id) : [],
+        clienteId: sistema.clienteId || "",
+        horasContrato: sistema.horasContrato || "",
       });
     }
   }, [sistema]);
@@ -71,13 +64,6 @@ const CreateSistemas = ({ sistema, onClose }) => {
     }));
   };
 
-  const handleClientesChange = (e) => {
-    setForm((prev) => ({
-      ...prev,
-      clientes: e.target.value,
-    }));
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     mutation.mutate(form);
@@ -91,14 +77,6 @@ const CreateSistemas = ({ sistema, onClose }) => {
           name="nombre"
           value={form.nombre}
           onChange={handleChange}
-          required
-        />
-        <TextField
-          label="Horas de Contrato"
-          name="horasContrato"
-          value={form.horasContrato}
-          onChange={handleChange}
-          type="number"
           required
         />
         <TextField
@@ -117,28 +95,30 @@ const CreateSistemas = ({ sistema, onClose }) => {
           onChange={handleChange}
           InputLabelProps={{ shrink: true }}
         />
-        <FormControl>
-          <InputLabel id="clientes-label">Clientes asociados</InputLabel>
+        <FormControl required>
+          <InputLabel id="cliente-label">Cliente</InputLabel>
           <Select
-            labelId="clientes-label"
-            multiple
-            value={form.clientes}
-            onChange={handleClientesChange}
-            renderValue={(selected) =>
-              clientes
-                .filter((c) => selected.includes(c.id))
-                .map((c) => c.nombre)
-                .join(", ")
-            }
+            labelId="cliente-label"
+            name="clienteId"
+            value={form.clienteId}
+            label="Cliente"
+            onChange={handleChange}
           >
             {clientes.map((cliente) => (
               <MenuItem key={cliente.id} value={cliente.id}>
-                <Checkbox checked={form.clientes.includes(cliente.id)} />
-                <ListItemText primary={cliente.nombre} />
+                {cliente.nombre}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
+        <TextField
+          label="Horas de Contrato"
+          name="horasContrato"
+          type="number"
+          value={form.horasContrato}
+          onChange={handleChange}
+          required
+        />
         <Box display="flex" justifyContent="flex-end" gap={1}>
           <Button onClick={onClose}>Cancelar</Button>
           <Button type="submit" variant="contained" color="primary">

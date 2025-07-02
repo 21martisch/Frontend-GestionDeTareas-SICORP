@@ -142,7 +142,7 @@ const TicketCard = ({
         )}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 'auto' }}>
-        {ticket.Categorium.nombre !== "Cerrado" && (
+        {ticket.Categorium.nombre === "Abierto" && (
           <IconButton onClick={() => handleOpenModal(ticket)}>
             <Edit />
           </IconButton>
@@ -168,7 +168,7 @@ const TicketCard = ({
                 </Menu>
               </>
             )}
-            {ticket.Categorium.nombre === "Cerrado" && (
+            {ticket.Categorium.nombre === "Cerrado" && !ticket.horasCargadas && (
               <IconButton
                 variant="outlined"
                 color="secondary"

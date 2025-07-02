@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getSistemas, getResumenHorasMensual } from "../../store/apis/sistemasApi";
+import { getClientes } from "../../store/apis/clientesApi";
 import { useSelector } from "react-redux";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, CircularProgress, Box, MenuItem, Select, FormControl, InputLabel, IconButton
@@ -14,6 +15,14 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const [resumenes, setResumenes] = useState({});
   const [loading, setLoading] = useState(true);
   const [mesSeleccionado, setMesSeleccionado] = useState("");
+  const [clientes, setClientes] = useState([]);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState("");
+
+  useEffect(() => {
+    if (user.user.rol === "admin" && clientes.length > 0 && !clienteSeleccionado) {
+      setClienteSeleccionado(clientes[0].id);
+    }
+  }, [user, clientes, clienteSeleccionado]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,7 +31,17 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
         const { data } = await getSistemas({}, token);
         setSistemas(data);
         const resumenesTemp = {};
-        for (const sistema of data) {
+
+        let sistemasFiltrados = data;
+        if (user.user.rol === "admin" && clienteSeleccionado) {
+          sistemasFiltrados = data.filter(s => String(s.clienteId) === String(clienteSeleccionado));
+        } else if (user.user.rol !== "admin") {
+          sistemasFiltrados = data.filter(
+            s => s.Cliente && String(s.Cliente.usuarioId) === String(user.user.id)
+          );
+        }
+
+        for (const sistema of sistemasFiltrados) {
           const resumen = await getResumenHorasMensual(sistema.id, token);
           resumenesTemp[sistema.id] = resumen.data;
         }
@@ -34,13 +53,24 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
       setLoading(false);
     };
     fetchData();
+  }, [user, token, clienteSeleccionado, clientes]);
+
+  useEffect(() => {
+    if (user.user.rol === "admin") {
+      getClientes(token).then(({ data }) => setClientes(data));
+    }
   }, [user, token]);
 
-  const usuarioId = user.user.id;
-  const sistemasFiltrados = sistemas.filter(s =>
-    Array.isArray(s.Clientes) &&
-    s.Clientes.some(cliente => String(cliente.usuarioId) === String(usuarioId))
-  );
+  let sistemasFiltrados = sistemas;
+  if (user.user.rol === "admin") {
+    if (clienteSeleccionado) {
+      sistemasFiltrados = sistemas.filter(s => String(s.clienteId) === String(clienteSeleccionado));
+    }
+  } else {
+    sistemasFiltrados = sistemas.filter(
+      s => s.Cliente && String(s.Cliente.usuarioId) === String(user.user.id)
+    );
+  }
 
   const mesesDisponibles = Array.from(
     new Set(
@@ -75,20 +105,36 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
         <CircularProgress />
       ) : (
         <>
-          <FormControl sx={{ mb: 2, minWidth: 200 }}>
-            <InputLabel>Mes</InputLabel>
-            <Select
-              value={mesSeleccionado}
-              label="Mes"
-              onChange={e => setMesSeleccionado(e.target.value)}
-            >
-              {mesesDisponibles.map(mes => (
-                <MenuItem key={mes} value={mes}>
-                  {mes.split("-")[1]}/{mes.split("-")[0]}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            {user.user.rol === "admin" && (
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel>Cliente</InputLabel>
+                <Select
+                  value={clienteSeleccionado}
+                  label="Cliente"
+                  onChange={e => setClienteSeleccionado(e.target.value)}
+                >
+                  {clientes.map(cliente => (
+                    <MenuItem key={cliente.id} value={cliente.id}>{cliente.nombre}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>Mes</InputLabel>
+              <Select
+                value={mesSeleccionado}
+                label="Mes"
+                onChange={e => setMesSeleccionado(e.target.value)}
+              >
+                {mesesDisponibles.map(mes => (
+                  <MenuItem key={mes} value={mes}>
+                    {mes.split("-")[1]}/{mes.split("-")[0]}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>

@@ -101,13 +101,21 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
               sistemas.map((sistema) => (
                 <TableRow key={sistema.id}>
                   <TableCell>{sistema.nombre}</TableCell>
-                  <TableCell>{sistema.horasContrato}</TableCell>
-                  <TableCell>{sistema.fechaDesde ? new Date(sistema.fechaDesde).toLocaleDateString() : "-"}</TableCell>
-                  <TableCell>{sistema.fechaHasta ? new Date(sistema.fechaHasta).toLocaleDateString() : "-"}</TableCell>
                   <TableCell>
-                    {sistema.Clientes && sistema.Clientes.length > 0
-                      ? sistema.Clientes.map(c => c.nombre).join(", ")
+                    {sistema.horasContrato ?? "-"}
+                  </TableCell>
+                  <TableCell>
+                    {sistema.fechaDesde
+                      ? sistema.fechaDesde.split("-").reverse().join("/")
                       : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {sistema.fechaHasta
+                      ? sistema.fechaHasta.split("-").reverse().join("/")
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {sistema.Cliente ? sistema.Cliente.nombre : "-"}
                   </TableCell>
                   <TableCell align="center">
                     <IconButton onClick={() => handleEdit(sistema)} title="Editar">

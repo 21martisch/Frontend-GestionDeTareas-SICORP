@@ -36,6 +36,7 @@ const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
         { label: "Usuarios", action: () => { navigate("/usuarios"); } },
         { label: "Clientes", action: () => { navigate("/clientes"); } },
         { label: "Sistemas", action: () => { navigate("/sistemas"); } },
+        { label: "Horas Consumidas", action: () => { navigate("/horas-contrato"); } },
     ];
     const clienteOptions = [
         { label: "Tickets", action: () => { setFilter("all"); navigate("/dashboard"); } },
