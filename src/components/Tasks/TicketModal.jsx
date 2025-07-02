@@ -31,12 +31,9 @@ const TicketModal = ({
   const [alerta, setAlerta] = useState("");
 
   const sistemasFiltrados = clienteId
-    ? sistemas.filter(s =>
-        Array.isArray(s.Clientes) &&
-        s.Clientes.some(c => String(c.id) === String(clienteId))
-      )
-    : sistemas;
-
+  ? sistemas.filter(s => String(s.clienteId) === String(clienteId))
+  : sistemas;
+  
   useEffect(() => {
     if (initialTicket) {
       setTitulo(initialTicket.titulo || "");
