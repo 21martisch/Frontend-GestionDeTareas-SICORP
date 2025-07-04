@@ -1,7 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Chip, CircularProgress, Paper, Button, TextField, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Modal } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Chip,
+  CircularProgress,
+  Paper,
+  Button,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Modal,
+  Divider,
+  Grid,
+  Stack,
+  Avatar
+} from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import {Visibility} from "@mui/icons-material";
+import { Visibility, AccountCircle } from "@mui/icons-material";
 import useAuth from "../../hooks/useAuth";
 import {
   getTicketById,
@@ -110,72 +128,84 @@ const Detalle = (props) => {
 
   return (
     <>
-      <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
+      <Box sx={{ maxWidth: 700, mx: "auto", mt: 4 }}>
         <Button variant="outlined" onClick={() => navigate(-1)} sx={{ mb: 2 }}>
           Volver
         </Button>
         <Paper sx={{ p: 3 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-            <Typography variant="h5">{ticket.titulo}</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{ticket.titulo}</Typography>
             <Typography variant="body2" color="textSecondary">
               {new Date(ticket.fechaCreacion).toLocaleDateString()}
             </Typography>
           </Box>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            <Chip
-              label={ticket.prioridad || "-"}
-              size="small"
-              color={
-                ticket.prioridad === "Alta"
-                  ? "error"
-                  : ticket.prioridad === "Media"
-                  ? "warning"
-                  : "success"
-              }
-              sx={{ fontWeight: 500, mr: 1 }}
-            />
-            <Chip
-              label={ticket.categoriaTipo || "-"}
-              size="small"
-              color="primary"
-              sx={{ fontWeight: 500, bgcolor: "#e3f2fd", color: "#1976d2" }}
-            />
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Cliente: <b>{ticket.Cliente?.nombre || "-"}</b>
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Usuario: <b>{ticket.Usuario?.nombre || "-"} {ticket.Usuario?.apellido}</b>
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Sistema: <b>{ticket.Sistema?.nombre || "-"}</b>
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Estado:{" "}
-            <Chip
-              label={ticket.Categorium?.nombre || "-"}
-              sx={getCategoriaChipStyle(ticket.Categorium?.nombre)}
-              size="small"
-            />
-          </Typography>
-          {ticket.tomado && (
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              Tomado por: <b>{ticket.usuarioAsignado || "-"}</b>
-            </Typography>
-          )}
-          {ticket.fechaCierre && (
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              Fecha de cierre: <b>{ticket.fechaCierre ? new Date(ticket.fechaCierre).toLocaleDateString() : "-"}</b>
-            </Typography>
-          )}
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Cliente:</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>{ticket.Cliente?.nombre || "-"}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Usuario:</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>{ticket.Usuario?.nombre || "-"} {ticket.Usuario?.apellido}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Sistema:</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>{ticket.Sistema?.nombre || "-"}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Estado:</Typography>
+              <Chip
+                label={ticket.Categorium?.nombre || "-"}
+                sx={getCategoriaChipStyle(ticket.Categorium?.nombre)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Prioridad:</Typography>
+              <Chip
+                label={ticket.prioridad || "-"}
+                size="small"
+                color={
+                  ticket.prioridad === "Alta"
+                    ? "error"
+                    : ticket.prioridad === "Media"
+                    ? "warning"
+                    : "success"
+                }
+                sx={{ fontWeight: 500 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Categoría:</Typography>
+              <Chip
+                label={ticket.categoriaTipo || "-"}
+                size="small"
+                color="primary"
+                sx={{ fontWeight: 500, bgcolor: "#e3f2fd", color: "#1976d2" }}
+              />
+            </Grid>
+            {ticket.tomado && (
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Tomado por:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{ticket.usuarioAsignado || "-"}</Typography>
+              </Grid>
+            )}
+            {ticket.fechaCierre && (
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Fecha de cierre:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{ticket.fechaCierre ? new Date(ticket.fechaCierre).toLocaleDateString() : "-"}</Typography>
+              </Grid>
+            )}
+          </Grid>
           {ticket.descripcion && (
-            <Typography variant="subtitle1" sx={{ mb: 2, wordBreak: "break-word" }}>
-              Descripción: <b>{ticket.descripcion}</b>
-            </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Descripción:</Typography>
+              <Typography variant="body1" sx={{ wordBreak: "break-word" }}>{ticket.descripcion}</Typography>
+            </Box>
           )}
           {ticket.archivosAdjuntos && ticket.archivosAdjuntos.length > 0 && (
             <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
                 Archivos adjuntos:
               </Typography>
               <List dense sx={{ maxHeight: 200, overflowY: "auto", border: "1px solid #eee", borderRadius: 1 }}>
@@ -196,35 +226,47 @@ const Detalle = (props) => {
             </Box>
           )}
 
-          <Box sx={{ mt: 3 }}>
+          <Divider sx={{ my: 3 }} />
+
+          <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>Comentarios</Typography>
-            <Paper sx={{ maxHeight: 300, overflowY: "auto", p: 2, mb: 2 }}>
+            <Paper sx={{ maxHeight: 300, overflowY: "auto", p: 2, mb: 2, background: "#fafafa" }}>
               {comentarios.length === 0 && (
                 <Typography variant="body2" color="textSecondary">No hay comentarios aún.</Typography>
               )}
               {comentarios.map(com => (
                 <Box key={com.id} sx={{ mb: 2, pl: 0 }}>
-                  <Paper sx={{ p: 2 }}>
-                    <Typography variant="subtitle2">{com.Usuario?.nombre || "Usuario"}</Typography>
-                    <Typography variant="body2">{com.texto}</Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      {new Date(com.fecha).toLocaleString()}
-                    </Typography>
-                    <Button size="small" onClick={() => setResponderA(com.id)}>Responder</Button>
+                  <Paper sx={{ p: 2, display: "flex", alignItems: "flex-start", mb: 1 }}>
+                    <Avatar sx={{ mr: 2, bgcolor: "#1976d2" }}>
+                      <AccountCircle />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="subtitle2">{com.Usuario?.nombre || "Usuario"}</Typography>
+                      <Typography variant="body2">{com.texto}</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        {new Date(com.fecha).toLocaleString()}
+                      </Typography>
+                      <Button size="small" onClick={() => setResponderA(com.id)}>Responder</Button>
+                    </Box>
                   </Paper>
                   {com.Respuestas && com.Respuestas.map(resp => (
-                    <Box key={resp.id} sx={{ ml: 4, mt: 1 }}>
-                      <Paper sx={{ p: 2, background: "#f5f5f5" }}>
-                        <Typography variant="subtitle2">{resp.Usuario?.nombre || "Usuario"}</Typography>
-                        <Typography variant="body2">{resp.texto}</Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {new Date(resp.fecha).toLocaleString()}
-                        </Typography>
+                    <Box key={resp.id} sx={{ ml: 8, mt: 1 }}>
+                      <Paper sx={{ p: 2, background: "#f5f5f5", display: "flex", alignItems: "flex-start" }}>
+                        <Avatar sx={{ mr: 2, bgcolor: "#90caf9" }}>
+                          <AccountCircle />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle2">{resp.Usuario?.nombre || "Usuario"}</Typography>
+                          <Typography variant="body2">{resp.texto}</Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {new Date(resp.fecha).toLocaleString()}
+                          </Typography>
+                        </Box>
                       </Paper>
                     </Box>
                   ))}
                   {responderA === com.id && (
-                    <Box component="form" onSubmit={handleResponderComentario} sx={{ mt: 1, ml: 4 }}>
+                    <Box component="form" onSubmit={handleResponderComentario} sx={{ mt: 1, ml: 8 }}>
                       <TextField
                         size="small"
                         fullWidth

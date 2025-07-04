@@ -86,6 +86,15 @@ const TicketsTable = ({
   };
 
   const handleCambiarCategoria = (ticket) => {
+    if (
+      ticket.Categorium?.nombre === "Abierto" &&
+      !ticket.tomado &&
+      !ticket.usuarioAsignado
+    ) {
+      setTicketParaTomar(ticket);
+      setConfirmarTomarOpen(true);
+      return;
+    }
     setTicketSeleccionado(ticket);
     setCambiarCategoriaOpen(true);
     setCategoriaSeleccionada(ticket.categoriaId || "");
@@ -176,27 +185,18 @@ const TicketsTable = ({
                 )}
                 <TableCell>
                   <Box sx={{ display: "flex", gap: 0.5 }}>
-                    {user?.user.rol === "admin" && ticket.Categorium?.nombre === "Abierto" && !ticket.tomado && (
+                    {user?.user.rol === "admin" && ticket.Categorium?.nombre !== "Cerrado"  && (
                       <>
-                        <IconButton onClick={() => handleTomar(ticket)}  title="Tomar">
-                          <PlayForWork />
-                        </IconButton>
+                        {!ticket.tomado && (
+                          <IconButton onClick={() => handleTomar(ticket)}  title="Tomar">
+                            <PlayForWork />
+                          </IconButton>
+                        )}
                         <IconButton onClick={() => handleAsignar(ticket)}  title="Asignar">
                           <Loop />
                         </IconButton>
                       </>
                     )}
-                    {user?.user.rol === "admin" && ticket.Categorium?.nombre === "Abierto" && ticket.tomado && (
-                      <IconButton
-                        variant="outlined"
-                        size="small"
-                        onClick={() => handleAsignar(ticket)}
-                        title="Asignar"
-                      >
-                        <Loop />
-                      </IconButton>
-                    )}
-                    
                     {ticket.Categorium?.nombre === "Abierto" && (
                       <IconButton onClick={() => handleOpenModal(ticket)}>
                         <Edit />
@@ -266,7 +266,7 @@ const TicketsTable = ({
       <Dialog open={asignarOpen} onClose={() => setAsignarOpen(false)}>
         <DialogTitle>Asignar ticket a usuario</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth>
+          <FormControl fullWidth sx={{ minWidth: 200, margin: "8px 0" }}>
             <InputLabel id="usuario-asignado-label">Usuario</InputLabel>
             <Select
               labelId="usuario-asignado-label"
@@ -289,7 +289,7 @@ const TicketsTable = ({
       <Dialog open={cambiarCategoriaOpen} onClose={() => setCambiarCategoriaOpen(false)}>
         <DialogTitle>Cambiar estado/categoría</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth>
+          <FormControl fullWidth sx={{ minWidth: 200, margin: "8px 0" }}>
             <InputLabel id="categoria-label">Categoría</InputLabel>
             <Select
               labelId="categoria-label"
