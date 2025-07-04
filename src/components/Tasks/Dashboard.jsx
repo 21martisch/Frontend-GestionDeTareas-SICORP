@@ -343,14 +343,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   }
 
   return (
-    <Box
-      sx={{
-        mt: 4,
-        ml: `calc(${isMenuOpen ? '12rem' : '0px'} + 2rem)`,
-        mr: '2rem',
-        transition: 'margin-left 0.3s',
-      }}
-    >
+    <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         {!isMenuOpen && (
           <IconButton
@@ -358,7 +351,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
             color="inherit"
             aria-label="menu"
             onClick={toggleMenu}
-            sx={{ mr: 2 }}
+            
           >
             <MenuIcon />
           </IconButton>

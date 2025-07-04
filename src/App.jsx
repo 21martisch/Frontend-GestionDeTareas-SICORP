@@ -22,7 +22,6 @@ const App = () => {
 
   return (
     <div>
-      {!hideHeader && <Header />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

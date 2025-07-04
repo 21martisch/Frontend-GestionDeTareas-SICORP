@@ -113,6 +113,9 @@ const TicketsTable = ({
               <TableCell><b>Fecha</b></TableCell>
               <TableCell><b>Categoría</b></TableCell>
               <TableCell><b>Estado</b></TableCell>
+              { user?.user.rol === "admin" && (
+                <TableCell><b>Tomado</b></TableCell>
+              )}
               <TableCell><b>Acciones</b></TableCell>
             </TableRow>
           </TableHead>
@@ -161,6 +164,16 @@ const TicketsTable = ({
                     onClick={user?.user.rol !== "cliente" ? () => handleCambiarCategoria(ticket) : undefined}
                   />
                 </TableCell>
+                { user?.user.rol === "admin" && (
+                  <TableCell>
+                    {ticket.tomado && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <CheckCircleOutline sx={{ fontSize: 18 }} />
+                        {ticket.usuarioAsignado || "-"}
+                      </Box>
+                    )}
+                  </TableCell>
+                )}
                 <TableCell>
                   <Box sx={{ display: "flex", gap: 0.5 }}>
                     {user?.user.rol === "admin" && ticket.Categorium?.nombre === "Abierto" && !ticket.tomado && (

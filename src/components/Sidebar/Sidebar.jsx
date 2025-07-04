@@ -36,12 +36,16 @@ const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
 
     return (
         <aside className={`
-            fixed top-0 left-0 h-full w-50 z-40
+            fixed left-0 z-40
             bg-[#fafafa] border-r border-gray-200 shadow-sm p-4
             flex flex-col
             transition-transform duration-300
             ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        `} style={{ height: 'calc(100vh - 65px)', top: 65 }}>
+        `} style={{
+            top: 65,
+            height: 'calc(100vh - 65px)',
+            width: '210px', 
+        }}>
             <div className="flex justify-end items-center mb-6">
                 <button onClick={toggleMenu} className="text-gray-500 focus:outline-none text-base">
                     ✕
