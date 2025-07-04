@@ -91,7 +91,7 @@ const Usuarios = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                         <MenuIcon />
                     </IconButton>
                 )}
-                <Typography variant="h4">Usuarios</Typography>
+                <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Usuarios</Typography>
                 <Button
                     variant="contained"
                     startIcon={<Add />}
@@ -109,6 +109,7 @@ const Usuarios = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                             <TableCell>Email</TableCell>
                             <TableCell>Rol</TableCell>
                             <TableCell>Fecha de creación</TableCell>
+                            <TableCell>Cliente</TableCell>
                             <TableCell align="center">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
@@ -127,6 +128,9 @@ const Usuarios = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                                     <TableCell>{usuario.rol}</TableCell>
                                     <TableCell>
                                         {new Date(usuario.createdAt).toLocaleDateString()}
+                                    </TableCell>
+                                    <TableCell>
+                                        {usuario.cliente ? usuario.cliente.nombre : <span style={{ color: "#bbb" }}>Sin cliente</span>}
                                     </TableCell>
                                     <TableCell align="center">
                                         <IconButton onClick={() => handleEdit(usuario)} title="Editar">

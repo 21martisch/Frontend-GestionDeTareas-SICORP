@@ -113,7 +113,6 @@ const TicketsTable = ({
               <TableCell><b>Fecha</b></TableCell>
               <TableCell><b>Categoría</b></TableCell>
               <TableCell><b>Estado</b></TableCell>
-              <TableCell><b>Tomado</b></TableCell>
               <TableCell><b>Acciones</b></TableCell>
             </TableRow>
           </TableHead>
@@ -161,14 +160,6 @@ const TicketsTable = ({
                     clickable={user?.user.rol !== "cliente"}
                     onClick={user?.user.rol !== "cliente" ? () => handleCambiarCategoria(ticket) : undefined}
                   />
-                </TableCell>
-                <TableCell>
-                  {ticket.tomado && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <CheckCircleOutline sx={{ fontSize: 18 }} />
-                      {ticket.usuarioAsignado || "-"}
-                    </Box>
-                  )}
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -237,7 +228,6 @@ const TicketsTable = ({
         </Table>
       </TableContainer>
 
-      {/* Diálogo Confirmar Tomar */}
       <Dialog open={confirmarTomarOpen} onClose={() => setConfirmarTomarOpen(false)}>
         <DialogTitle>¿Desea tomar el ticket?</DialogTitle>
         <DialogActions>
@@ -260,7 +250,6 @@ const TicketsTable = ({
         </DialogActions>
       </Dialog>
 
-      {/* Dialogo Asignar */}
       <Dialog open={asignarOpen} onClose={() => setAsignarOpen(false)}>
         <DialogTitle>Asignar ticket a usuario</DialogTitle>
         <DialogContent>
@@ -284,7 +273,6 @@ const TicketsTable = ({
         </DialogActions>
       </Dialog>
 
-      {/* Dialogo Cambiar Categoria */}
       <Dialog open={cambiarCategoriaOpen} onClose={() => setCambiarCategoriaOpen(false)}>
         <DialogTitle>Cambiar estado/categoría</DialogTitle>
         <DialogContent>

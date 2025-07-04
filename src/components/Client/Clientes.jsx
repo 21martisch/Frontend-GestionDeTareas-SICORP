@@ -71,7 +71,7 @@ const Clientes = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                         <MenuIcon />
                     </IconButton>
                 )}
-                <Typography variant="h4">Clientes</Typography>
+                <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Clientes</Typography>
                 <Button
                     variant="contained"
                     startIcon={<Add />}
@@ -87,13 +87,14 @@ const Clientes = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                             <TableCell>Nombre</TableCell>
                             <TableCell>Email</TableCell>
                             <TableCell>Fecha de creación</TableCell>
+                            <TableCell>Sistemas</TableCell>
                             <TableCell align="center">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={4} align="center">Cargando...</TableCell>
+                                <TableCell colSpan={5} align="center">Cargando...</TableCell>
                             </TableRow>
                         ) : (
                             clientes.map((cliente) => (
@@ -102,6 +103,12 @@ const Clientes = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                                     <TableCell>{cliente.email}</TableCell>
                                     <TableCell>
                                         {new Date(cliente.createdAt).toLocaleDateString()}
+                                    </TableCell>
+                                    <TableCell>
+                                        {cliente.Sistemas && cliente.Sistemas.length > 0
+                                            ? cliente.Sistemas.map(s => s.nombre).join(", ")
+                                            : <span style={{ color: "#bbb" }}>Sin sistemas</span>
+                                        }
                                     </TableCell>
                                     <TableCell align="center">
                                         <IconButton onClick={() => handleEdit(cliente)} title="Editar">

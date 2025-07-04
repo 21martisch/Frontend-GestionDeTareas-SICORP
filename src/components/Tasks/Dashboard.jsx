@@ -424,7 +424,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
       ) : (
         <>
           <TicketsTable
-            tickets={ticketsData.tickets}
+            tickets={ticketsData.tickets.filter(t => t.Categorium?.nombre !== "Cerrado")}
             handleOpenModal={handleOpenModal}
             handleDeleteTicket={handleDeleteTicket}
             onTomarTicket={handleTomarTicket}

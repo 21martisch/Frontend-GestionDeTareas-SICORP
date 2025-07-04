@@ -135,8 +135,6 @@ const TicketModal = ({
     setArchivosAdjuntos(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Layout: si hay clientes, mostrar campo cliente y dividir título/cliente en 2 columnas
-  // Si no hay clientes, el título ocupa todo el ancho
   return (
     <Modal open={open} onClose={handleClose}>
       <Box
@@ -151,6 +149,8 @@ const TicketModal = ({
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
+          maxHeight: "90vh",
+          overflowY: "auto",
         }}
         encType="multipart/form-data"
       >
@@ -292,6 +292,7 @@ const TicketModal = ({
               onChange={(e) => setDescripcion(e.target.value)}
               multiline
               minRows={3}
+              maxRows={8}
             />
           </Grid>
           <Grid item xs={12}>

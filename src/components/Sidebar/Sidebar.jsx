@@ -1,10 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import GroupIcon from '@mui/icons-material/Group';
-import BusinessIcon from '@mui/icons-material/Business';
-import SettingsIcon from '@mui/icons-material/Settings';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { Assignment, Group, Business, Settings, AccessTime, HourglassBottom } from "@mui/icons-material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import Swal from 'sweetalert2';
 
@@ -14,16 +10,18 @@ const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
     const user = useSelector((state) => state.auth.user);
 
     const adminOptions = [
-        { label: "Todos los Tickets", icon: <AssignmentIcon fontSize="small" />, action: () => { setFilter("all"); navigate("/dashboard"); } },
-        { label: "Tickets asignados", icon: <AssignmentIcon fontSize="small" />, action: () => { setFilter("assigned"); navigate("/dashboard"); } },
-        { label: "Usuarios", icon: <GroupIcon fontSize="small" />, action: () => { navigate("/usuarios"); } },
-        { label: "Clientes", icon: <BusinessIcon fontSize="small" />, action: () => { navigate("/clientes"); } },
-        { label: "Sistemas", icon: <SettingsIcon fontSize="small" />, action: () => { navigate("/sistemas"); } },
-        { label: "Horas Consumidas", icon: <AccessTimeIcon fontSize="small" />, action: () => { navigate("/horas-contrato"); } },
+        { label: "Todos los Tickets", icon: <Assignment fontSize="small" />, action: () => { setFilter("all"); navigate("/dashboard"); } },
+        { label: "Tickets asignados", icon: <Assignment fontSize="small" />, action: () => { setFilter("assigned"); navigate("/dashboard"); } },
+        { label: "Historial Tickets", icon: <AccessTime fontSize="small" />, action: () => { navigate("/historial"); } },
+        { label: "Usuarios", icon: <Group fontSize="small" />, action: () => { navigate("/usuarios"); } },
+        { label: "Clientes", icon: <Business fontSize="small" />, action: () => { navigate("/clientes"); } },
+        { label: "Sistemas", icon: <Settings fontSize="small" />, action: () => { navigate("/sistemas"); } },
+        { label: "Horas Consumidas", icon: <HourglassBottom fontSize="small" />, action: () => { navigate("/horas-contrato"); } },
     ];
     const clienteOptions = [
-        { label: "Tickets", icon: <AssignmentIcon fontSize="small" />, action: () => { setFilter("all"); navigate("/dashboard"); } },
-        { label: "Horas Consumidas", icon: <AccessTimeIcon fontSize="small" />, action: () => { navigate("/horas-contrato"); } },
+        { label: "Tickets", icon: <Assignment fontSize="small" />, action: () => { setFilter("all"); navigate("/dashboard"); } },
+        { label: "Horas Consumidas", icon: <HourglassBottom fontSize="small" />, action: () => { navigate("/horas-contrato"); } },
+        { label: "Historial Tickets", icon: <AccessTime fontSize="small" />, action: () => { navigate("/historial"); } },
     ];
 
     const options = user?.user.rol === "admin" ? adminOptions : clienteOptions;

@@ -14,6 +14,7 @@ import Usuarios from "./components/Usuarios/Usuarios";
 import Sistemas from "./components/Sistemas/Sistemas";
 import Layout from "./components/Sidebar/Layout";
 import Header from "./components/Header/Header";
+import HistorialTicketsContainer from "./components/HistorialTickets/HistorialTicketsContainer";
 
 const App = () => {
   const location = useLocation();
@@ -83,6 +84,16 @@ const App = () => {
             element={
               <Layout>
                 <HorasContrato />
+              </Layout>
+            }
+          />
+        </Route>
+        <Route element={<PrivateRoute />}>
+          <Route
+            path="/historial"
+            element={
+              <Layout>
+                <HistorialTicketsContainer />
               </Layout>
             }
           />

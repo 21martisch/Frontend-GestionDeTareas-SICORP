@@ -71,7 +71,7 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h4">Sistemas</Typography>
+        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Sistemas</Typography>
         <Button
           variant="contained"
           startIcon={<Add />}

@@ -107,7 +107,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h4">Horas Consumidas</Typography>
+        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Horas Consumidas</Typography>
       </Box>
       {loading ? (
         <CircularProgress />
