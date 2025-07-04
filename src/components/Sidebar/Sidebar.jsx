@@ -41,7 +41,7 @@ const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
             flex flex-col
             transition-transform duration-300
             ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        `} style={{ marginTop: 65 }}>
+        `} style={{ height: 'calc(100vh - 65px)', top: 65 }}>
             <div className="flex justify-end items-center mb-6">
                 <button onClick={toggleMenu} className="text-gray-500 focus:outline-none text-base">
                     ✕
