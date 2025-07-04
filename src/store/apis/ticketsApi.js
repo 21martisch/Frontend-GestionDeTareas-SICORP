@@ -28,9 +28,16 @@ export const deleteTicket = (ticketId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const tomarOReasignarTicket = (ticketId, usuarioId, token) =>
-  axios.patch(
-    `${API_URL}/tickets/${ticketId}/tomar-o-reasignar`,
+export const tomarTicket = (ticketId, token) =>
+  axios.post(
+    `${import.meta.env.VITE_API_URL}/tickets/${ticketId}/tomar`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+export const reasignarTicket = (ticketId, usuarioId, token) => 
+  axios.post(
+    `${import.meta.env.VITE_API_URL}/tickets/${ticketId}/reasignar`,
     { usuarioId },
     { headers: { Authorization: `Bearer ${token}` } }
   );

@@ -26,9 +26,9 @@ const Usuarios = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     const token = useSelector((state) => state.auth.token);
 
     const { data, isLoading } = useQuery({
-        queryKey: ["usuarios", page, rowsPerPage, "admin"],
+        queryKey: ["usuarios", page, rowsPerPage],
         queryFn: () =>
-            getUsuarios({ page: page + 1, limit: rowsPerPage, rol: "admin" }, token).then(res => res.data),
+            getUsuarios({ page: page + 1, limit: rowsPerPage }, token).then(res => res.data),
     });
 
     const usuarios = data?.users || [];
@@ -75,7 +75,7 @@ const Usuarios = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     return (
         <Box sx={{
             mt: 4,
-            ml: `calc(${isMenuOpen ? '16rem' : '0px'} + 2rem)`,
+            ml: `calc(${isMenuOpen ? '12rem' : '0px'} + 2rem)`,
             mr: '2rem',
             transition: 'margin-left 0.3s',
         }}>

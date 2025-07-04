@@ -11,6 +11,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { getClientes } from "../../store/apis/clientesApi";
+import { getUsuarios } from "../../store/apis/usuariosApi";
 import { createSistema, updateSistema } from "../../store/apis/sistemasApi";
 
 const CreateSistemas = ({ sistema, onClose }) => {
@@ -20,6 +21,7 @@ const CreateSistemas = ({ sistema, onClose }) => {
     fechaHasta: "",
     clienteId: "",
     horasContrato: "",
+    usuarios: [],
   });
   const token = useSelector((state) => state.auth.token);
   const queryClient = useQueryClient();
@@ -30,6 +32,17 @@ const CreateSistemas = ({ sistema, onClose }) => {
     enabled: !!token,
   });
 
+  const { data: usuarios = [] } = useQuery({
+    queryKey: ["usuarios"],
+    queryFn: () => getUsuarios({ limit: 1000 }, token).then(res => res.data.users ?? []),
+    enabled: !!token,
+  });
+
+  const usuariosDelCliente = Array.isArray(usuarios)
+  ? usuarios.filter((u) => String(u.clienteId) === String(form.clienteId))
+  : [];
+
+
   useEffect(() => {
     if (sistema) {
       setForm({
@@ -38,9 +51,19 @@ const CreateSistemas = ({ sistema, onClose }) => {
         fechaHasta: sistema.fechaHasta ? sistema.fechaHasta.slice(0, 10) : "",
         clienteId: sistema.clienteId || "",
         horasContrato: sistema.horasContrato || "",
+        usuarios: sistema.usuarios ? sistema.usuarios.map(u => String(u.id)) : [],
       });
     }
   }, [sistema]);
+
+  useEffect(() => {
+    if (!sistema && form.clienteId) {
+      setForm((prev) => ({
+        ...prev,
+        usuarios: [],
+      }));
+    }
+  }, [form.clienteId]);
 
   const mutation = useMutation({
     mutationFn: async (data) => {
@@ -61,6 +84,13 @@ const CreateSistemas = ({ sistema, onClose }) => {
     setForm((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleUsuariosChange = (e) => {
+    setForm((prev) => ({
+      ...prev,
+      usuarios: e.target.value,
     }));
   };
 
@@ -119,6 +149,28 @@ const CreateSistemas = ({ sistema, onClose }) => {
           onChange={handleChange}
           required
         />
+        <FormControl>
+          <InputLabel id="usuarios-label">Usuarios asignados</InputLabel>
+          <Select
+            labelId="usuarios-label"
+            name="usuarios"
+            multiple
+            value={form.usuarios}
+            onChange={handleUsuariosChange}
+            renderValue={(selected) =>
+              usuariosDelCliente
+                .filter(u => selected.includes(String(u.id)))
+                .map(u => u.nombre)
+                .join(", ")
+            }
+          >
+            {usuariosDelCliente.map((u) => (
+              <MenuItem key={u.id} value={String(u.id)}>
+                {u.nombre} {u.apellido}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Box display="flex" justifyContent="flex-end" gap={1}>
           <Button onClick={onClose}>Cancelar</Button>
           <Button type="submit" variant="contained" color="primary">

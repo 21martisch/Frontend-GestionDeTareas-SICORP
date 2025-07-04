@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box, TextField, Button, MenuItem, Alert } from "@mui/material";
+import { useSelector } from "react-redux";
+import { Modal, Box, TextField, Button, MenuItem, Alert, Grid } from "@mui/material";
 
 const prioridades = [
   { value: "Alta", label: "Alta" },
@@ -12,6 +13,11 @@ const categorias = [
   { value: "Desarrollo", label: "Desarrollo" },
   { value: "Modificación", label: "Modificación" },
 ];
+
+const extensionesPermitidas = [
+  "pdf", "jpg", "jpeg", "png", "xls", "xlsx", "doc", "docx"
+];
+const maxFileSize = 5 * 1024 * 1024;
 
 const TicketModal = ({
   open,
@@ -29,11 +35,24 @@ const TicketModal = ({
   const [prioridad, setPrioridad] = useState("");
   const [categoriaTipo, setCategoriaTipo] = useState("");
   const [alerta, setAlerta] = useState("");
+  const usuario = useSelector(state => state.auth.user);
 
-  const sistemasFiltrados = clienteId
-  ? sistemas.filter(s => String(s.clienteId) === String(clienteId))
-  : sistemas;
-  
+  const clienteIdFinal = clientes.length > 0 ? clienteId : usuario?.user?.clienteId;
+
+  const sistemasFiltrados = clienteIdFinal
+    ? sistemas.filter(
+        s =>
+          String(s.clienteId) === String(clienteIdFinal) &&
+          (
+            usuario?.user?.rol === "admin" ||
+            (
+              Array.isArray(s.usuarios) &&
+              s.usuarios.some(u => String(u.id) === String(usuario.user.id))
+            )
+          )
+      )
+    : sistemas;
+
   useEffect(() => {
     if (initialTicket) {
       setTitulo(initialTicket.titulo || "");
@@ -54,6 +73,36 @@ const TicketModal = ({
     setAlerta("");
   }, [initialTicket, open]);
 
+  const handleArchivosChange = (e) => {
+    const nuevosArchivos = Array.from(e.target.files);
+    let error = "";
+
+    const nombresActuales = archivosAdjuntos.map(f => f.name);
+    const archivosSinDuplicados = nuevosArchivos.filter(f => !nombresActuales.includes(f.name));
+    if (archivosSinDuplicados.length < nuevosArchivos.length) {
+      error = "Algunos archivos ya fueron seleccionados.";
+    }
+
+    for (let file of archivosSinDuplicados) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (!extensionesPermitidas.includes(ext)) {
+        error = "Tipo de archivo no permitido.";
+        break;
+      }
+      if (file.size > maxFileSize) {
+        error = "El archivo supera el tamaño máximo permitido (5MB).";
+        break;
+      }
+    }
+
+    if (error) {
+      setAlerta(error);
+      return;
+    }
+    setArchivosAdjuntos(prev => [...prev, ...archivosSinDuplicados]);
+    setAlerta("");
+  };
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!titulo.trim() || !sistemaId) {
@@ -73,11 +122,21 @@ const TicketModal = ({
       });
     }
     if (initialTicket?.id) formData.append("id", initialTicket.id);
-    if (clientes.length > 0 && clienteId) formData.append("clienteId", clienteId);
+    if (clientes.length > 0 && clienteId) {
+      formData.append("clienteId", clienteId);
+    } else if (usuario?.rol === "cliente" && usuario?.clienteId) {
+      formData.append("clienteId", usuario.clienteId);
+    }
 
     handleSubmit(formData);
   };
 
+  const handleRemoveArchivo = (index) => {
+    setArchivosAdjuntos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Layout: si hay clientes, mostrar campo cliente y dividir título/cliente en 2 columnas
+  // Si no hay clientes, el título ocupa todo el ancho
   return (
     <Modal open={open} onClose={handleClose}>
       <Box
@@ -88,7 +147,7 @@ const TicketModal = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
+          width: 750,
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
@@ -100,100 +159,147 @@ const TicketModal = ({
             {alerta}
           </Alert>
         )}
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Título del ticket"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-          required
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Descripción"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          multiline
-          minRows={3}
-        />
-        {clientes.length > 0 && (
-          <TextField
-            select
-            fullWidth
-            margin="normal"
-            label="Cliente"
-            value={clienteId}
-            onChange={(e) => setClienteId(e.target.value)}
-            required
-          >
-            {clientes.map((c) => (
-              <MenuItem key={c.id} value={c.id}>{c.nombre}</MenuItem>
-            ))}
-          </TextField>
-        )}
-        <TextField
-          select
-          fullWidth
-          margin="normal"
-          label="Sistema"
-          value={sistemaId}
-          onChange={(e) => setSistemaId(e.target.value)}
-          required
-        >
-          {sistemasFiltrados.map((s) => (
-            <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          fullWidth
-          margin="normal"
-          label="Prioridad"
-          value={prioridad}
-          onChange={(e) => setPrioridad(e.target.value)}
-          required
-        >
-          {prioridades.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          fullWidth
-          margin="normal"
-          label="Categoría"
-          value={categoriaTipo}
-          onChange={(e) => setCategoriaTipo(e.target.value)}
-          required
-        >
-          {categorias.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
-        <Button
-          variant="contained"
-          component="label"
-          fullWidth
-          sx={{ mt: 2, mb: 1 }}
-        >
-          {archivosAdjuntos && archivosAdjuntos.length > 0
-            ? `${archivosAdjuntos.length} archivo(s) seleccionado(s)`
-            : "Adjuntar archivos"}
-          <input
-            type="file"
-            hidden
-            multiple
-            onChange={e => setArchivosAdjuntos(prev => [...prev, ...Array.from(e.target.files)])}
-          />
-        </Button>
-        <Button type="submit" variant="contained" color="primary" fullWidth>
-          {initialTicket ? "Actualizar ticket" : "Agregar ticket"}
-        </Button>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={clientes.length > 0 ? 6 : 12}>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Título del ticket"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              required
+            />
+          </Grid>
+          {clientes.length > 0 && (
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                margin="normal"
+                label="Cliente"
+                value={clienteId}
+                onChange={(e) => setClienteId(e.target.value)}
+                required
+              >
+                {clientes.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>{c.nombre}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          )}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              fullWidth
+              margin="normal"
+              label="Sistema"
+              value={sistemaId}
+              onChange={(e) => setSistemaId(e.target.value)}
+              required
+            >
+              {sistemasFiltrados.map((s) => (
+                <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              fullWidth
+              margin="normal"
+              label="Prioridad"
+              value={prioridad}
+              onChange={(e) => setPrioridad(e.target.value)}
+              required
+            >
+              {prioridades.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              fullWidth
+              margin="normal"
+              label="Categoría"
+              value={categoriaTipo}
+              onChange={(e) => setCategoriaTipo(e.target.value)}
+              required
+            >
+              {categorias.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="contained"
+              component="label"
+              fullWidth
+              sx={{ mt: 2, mb: 1 }}
+            >
+              {archivosAdjuntos && archivosAdjuntos.length > 0
+                ? `${archivosAdjuntos.length} archivo(s) seleccionado(s)`
+                : "Adjuntar archivos"}
+              <input
+                type="file"
+                hidden
+                multiple
+                onChange={handleArchivosChange}
+              />
+            </Button>
+            {archivosAdjuntos && archivosAdjuntos.length > 0 && (
+              <Box
+                sx={{
+                  mb: 2,
+                  maxHeight: 120,
+                  overflowY: 'auto',
+                  border: '1px solid #eee',
+                  borderRadius: 1,
+                  p: 1,
+                  background: '#fafafa'
+                }}
+              >
+                {archivosAdjuntos.map((file, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {file.name}
+                    </span>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveArchivo(idx)}
+                      sx={{ ml: 1 }}
+                    >
+                      Eliminar
+                    </Button>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Descripción"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              multiline
+              minRows={3}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              {initialTicket ? "Actualizar ticket" : "Agregar ticket"}
+            </Button>
+          </Grid>
+        </Grid>
       </Box>
     </Modal>
   );

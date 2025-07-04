@@ -145,10 +145,13 @@ const Detalle = (props) => {
             Cliente: <b>{ticket.Cliente?.nombre || "-"}</b>
           </Typography>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Usuario: <b>{ticket.Usuario?.nombre || "-"} {ticket.Usuario?.apellido}</b>
+          </Typography>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Sistema: <b>{ticket.Sistema?.nombre || "-"}</b>
           </Typography>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Categoría:{" "}
+            Estado:{" "}
             <Chip
               label={ticket.Categorium?.nombre || "-"}
               sx={getCategoriaChipStyle(ticket.Categorium?.nombre)}
@@ -157,7 +160,7 @@ const Detalle = (props) => {
           </Typography>
           {ticket.tomado && (
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              Usuario asignado: <b>{ticket.Usuario?.nombre || "-"}</b>
+              Tomado por: <b>{ticket.usuarioAsignado || "-"}</b>
             </Typography>
           )}
           {ticket.fechaCierre && (
@@ -175,7 +178,7 @@ const Detalle = (props) => {
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Archivos adjuntos:
               </Typography>
-              <List dense>
+              <List dense sx={{ maxHeight: 200, overflowY: "auto", border: "1px solid #eee", borderRadius: 1 }}>
                 {ticket.archivosAdjuntos.map((url, idx) => {
                   const nombre = decodeURIComponent(url.split("/").pop());
                   return (

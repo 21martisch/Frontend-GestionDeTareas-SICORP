@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import Dashboard from "./components/Tasks/Dashboard";
@@ -13,10 +13,15 @@ import 'react-toastify/dist/ReactToastify.css';
 import Usuarios from "./components/Usuarios/Usuarios";
 import Sistemas from "./components/Sistemas/Sistemas";
 import Layout from "./components/Sidebar/Layout";
+import Header from "./components/Header/Header";
 
 const App = () => {
+  const location = useLocation();
+  const hideHeader = location.pathname === "/login" || location.pathname === "/register";
+
   return (
     <div>
+      {!hideHeader && <Header />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

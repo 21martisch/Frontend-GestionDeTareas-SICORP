@@ -55,7 +55,7 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   return (
     <Box sx={{
       mt: 4,
-      ml: `calc(${isMenuOpen ? '16rem' : '0px'} + 2rem)`,
+      ml: `calc(${isMenuOpen ? '12rem' : '0px'} + 2rem)`,
       mr: '2rem',
       transition: 'margin-left 0.3s',
     }}>
@@ -89,21 +89,20 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
               <TableCell>Fecha Desde</TableCell>
               <TableCell>Fecha Hasta</TableCell>
               <TableCell>Clientes Asociados</TableCell>
+              <TableCell>Usuarios Asignados</TableCell> 
               <TableCell align="center">Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} align="center">Cargando...</TableCell>
+                <TableCell colSpan={7} align="center">Cargando...</TableCell>
               </TableRow>
             ) : (
               sistemas.map((sistema) => (
                 <TableRow key={sistema.id}>
                   <TableCell>{sistema.nombre}</TableCell>
-                  <TableCell>
-                    {sistema.horasContrato ?? "-"}
-                  </TableCell>
+                  <TableCell>{sistema.horasContrato ?? "-"}</TableCell>
                   <TableCell>
                     {sistema.fechaDesde
                       ? sistema.fechaDesde.split("-").reverse().join("/")
@@ -116,6 +115,11 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
                   </TableCell>
                   <TableCell>
                     {sistema.Cliente ? sistema.Cliente.nombre : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {sistema.usuarios && sistema.usuarios.length > 0
+                      ? sistema.usuarios.map(u => u.nombre).join(", ")
+                      : "-"}
                   </TableCell>
                   <TableCell align="center">
                     <IconButton onClick={() => handleEdit(sistema)} title="Editar">

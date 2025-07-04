@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Button, Typography, MenuItem, InputAdornment, IconButton } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Box, TextField, Button, Typography, MenuItem } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { getSistemas } from "../../store/apis/sistemasApi";
@@ -11,12 +10,9 @@ const CreateCliente = ({ cliente, onClose }) => {
   const token = useSelector((state) => state.auth.token);
   const [form, setForm] = useState({
     nombre: "",
-    apellido: "",
     email: "",
-    password: "",
     sistemas: [],
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -30,17 +26,13 @@ const CreateCliente = ({ cliente, onClose }) => {
     if (cliente) {
       setForm({
         nombre: cliente.nombre,
-        apellido: cliente.apellido,
         email: cliente.email,
-        password: "",
         sistemas: cliente.Sistemas?.map(s => s.id) || [],
       });
     } else {
       setForm({
         nombre: "",
-        apellido: "",
         email: "",
-        password: "",
         sistemas: [],
       });
     }
@@ -98,15 +90,6 @@ const CreateCliente = ({ cliente, onClose }) => {
           required
         />
         <TextField
-          label="Apellido"
-          name="apellido"
-          value={form.apellido}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <TextField
           label="Email"
           name="email"
           type="email"
@@ -116,31 +99,6 @@ const CreateCliente = ({ cliente, onClose }) => {
           margin="normal"
           required
         />
-        {!cliente && (
-          <TextField
-            label="Contraseña"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            value={form.password}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                    onClick={() => setShowPassword((show) => !show)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        )}
         <TextField
           select
           label="Sistemas"

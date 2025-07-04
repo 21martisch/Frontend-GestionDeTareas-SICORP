@@ -36,8 +36,12 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
         if (user.user.rol === "admin" && clienteSeleccionado) {
           sistemasFiltrados = data.filter(s => String(s.clienteId) === String(clienteSeleccionado));
         } else if (user.user.rol !== "admin") {
+          const clienteId = user.user.clienteId;
           sistemasFiltrados = data.filter(
-            s => s.Cliente && String(s.Cliente.usuarioId) === String(user.user.id)
+            s =>
+              String(s.clienteId) === String(clienteId) &&
+              Array.isArray(s.usuarios) &&
+              s.usuarios.some(u => String(u.id) === String(user.user.id))
           );
         }
 
@@ -67,8 +71,12 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
       sistemasFiltrados = sistemas.filter(s => String(s.clienteId) === String(clienteSeleccionado));
     }
   } else {
+    const clienteId = user.user.clienteId;
     sistemasFiltrados = sistemas.filter(
-      s => s.Cliente && String(s.Cliente.usuarioId) === String(user.user.id)
+      s =>
+        String(s.clienteId) === String(clienteId) &&
+        Array.isArray(s.usuarios) &&
+        s.usuarios.some(u => String(u.id) === String(user.user.id))
     );
   }
 
@@ -83,7 +91,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   return (
     <Box sx={{
       mt: 4,
-      ml: `calc(${isMenuOpen ? '16rem' : '0px'} + 2rem)`,
+      ml: `calc(${isMenuOpen ? '12rem' : '0px'} + 2rem)`,
       mr: '2rem',
       transition: 'margin-left 0.3s',
     }}>
@@ -99,7 +107,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h5" sx={{ mb: 2 }}>Horas Consumidas</Typography>
+        <Typography variant="h4">Horas Consumidas</Typography>
       </Box>
       {loading ? (
         <CircularProgress />

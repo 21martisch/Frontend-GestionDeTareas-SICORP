@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Button, TextField, MenuItem, Box, InputAdornment, IconButton, Alert } from "@mui/material";
+import { Button, TextField, MenuItem, Box, InputAdornment, IconButton, Alert, FormControl, InputLabel, Select } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
+import { getClientes } from "../../store/apis/clientesApi";
 import {
   createUsuario,
   updateUsuario
@@ -10,6 +11,7 @@ import {
 
 const roles = [
   { value: "admin", label: "Admin" },
+  { value: "cliente", label: "Usuario Cliente" },
 ];
 
 const CreateUsuario = ({ usuario, onClose }) => {
@@ -19,11 +21,17 @@ const CreateUsuario = ({ usuario, onClose }) => {
     email: "",
     password: "",
     rol: "admin",
+    clienteId: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const token = useSelector((state) => state.auth.token);
   const queryClient = useQueryClient();
+
+  const { data: clientes = [] } = useQuery({
+    queryKey: ["clientes"],
+    queryFn: () => getClientes(token).then(res => res.data)
+  });
 
   useEffect(() => {
     if (usuario) {
@@ -33,6 +41,7 @@ const CreateUsuario = ({ usuario, onClose }) => {
         email: usuario.email || "",
         password: "",
         rol: usuario.rol || "admin",
+        clienteId: usuario.clienteId || "",
       });
     }
   }, [usuario]);
@@ -70,6 +79,9 @@ const CreateUsuario = ({ usuario, onClose }) => {
     let data = { ...form };
     if (usuario) {
       delete data.password;
+    }
+    if (data.rol !== "cliente") {
+      delete data.clienteId;
     }
     mutation.mutate(data);
   };
@@ -137,6 +149,24 @@ const CreateUsuario = ({ usuario, onClose }) => {
             </MenuItem>
           ))}
         </TextField>
+        {form.rol === "cliente" && (
+          <FormControl required>
+            <InputLabel id="cliente-label">Cliente</InputLabel>
+            <Select
+              labelId="cliente-label"
+              name="clienteId"
+              value={form.clienteId}
+              label="Cliente"
+              onChange={handleChange}
+            >
+              {clientes.map((cliente) => (
+                <MenuItem key={cliente.id} value={cliente.id}>
+                  {cliente.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <Box display="flex" justifyContent="flex-end" gap={1}>
           <Button onClick={onClose}>Cancelar</Button>
           <Button type="submit" variant="contained" color="primary">

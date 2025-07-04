@@ -8,12 +8,12 @@ import Sidebar from "../Sidebar/Sidebar";
 import TicketModal from "./TicketModal";
 import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
-import TicketCard from "./TicketCard";
+import TicketsTable from "./TicketTable";
 import NoTicketsMessage from "./NoTasksMessage";
 import useAuth from "../../hooks/useAuth";
 import TicketFilters from "./TicketFilters";
 import HorasModal from "./HorasModal";
-import {getTickets,createTicket,updateTicket,deleteTicket,tomarOReasignarTicket,cambiarCategoria,updateHoras} from "../../store/apis/ticketsApi";
+import {getTickets,createTicket,updateTicket,deleteTicket,tomarTicket, reasignarTicket,cambiarCategoria,updateHoras} from "../../store/apis/ticketsApi";
 
 const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   const [page, setPage] = useState(1);
@@ -118,14 +118,15 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   const usuariosAdmins = usuarios.filter(u => u.rol === "admin");
 
   const fetchTickets = async () => {
+    const usuarioAsignadoNombre = `${user.user.nombre} ${user.user.apellido}`;
     let params = { page, limit: 10 };
-    if (user?.user.rol === "cliente" && cliente) params.clienteId = cliente.id;
+    if (user?.user.rol === "cliente") params.usuarioId = user.user.id;
     if (activeFilters.categoria) params.categoriaId = activeFilters.categoria;
     if (activeFilters.sistemaFiltro) params.sistemaId = activeFilters.sistemaFiltro;
     if (activeFilters.clienteFiltro) params.clienteId = activeFilters.clienteFiltro;
     if (activeFilters.fechaInicio) params.fechaInicio = activeFilters.fechaInicio;
     if (activeFilters.fechaFin) params.fechaFin = activeFilters.fechaFin;
-    if (filter === "assigned") params.usuarioId = user.user.id;
+    if (filter === "assigned") params.usuarioAsignado = usuarioAsignadoNombre;
     const { data } = await getTickets(params, token);
     return data;
   };
@@ -174,8 +175,18 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   });
 
   const tomarTicketMutation = useMutation({
-    mutationFn: ({ ticketId, usuarioId }) =>
-      tomarOReasignarTicket(ticketId, usuarioId || user.user.id, token),
+    mutationFn: (ticketId) => tomarTicket(ticketId, token),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tickets"]);
+      toast.success("¡Ticket tomado!");
+    },
+    onError: () => {
+      toast.error("No se pudo tomar el ticket");
+    }
+  });
+
+  const reasignarTicketMutation = useMutation({
+    mutationFn: ({ ticketId, usuarioId }) => reasignarTicket(ticketId, usuarioId, token),
     onSuccess: () => {
       queryClient.invalidateQueries(["tickets"]);
       toast.success("¡Ticket asignado!");
@@ -257,11 +268,11 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   };
 
   const handleTomarTicket = (ticketId) => {
-    tomarTicketMutation.mutate({ ticketId, usuarioId: user.user.id }); 
+    tomarTicketMutation.mutate(ticketId);
   };
 
   const handleAsignarTicket = (ticketId, usuarioId) => {
-    tomarTicketMutation.mutate({ ticketId, usuarioId });
+    reasignarTicketMutation.mutate({ ticketId, usuarioId });
   };
 
   const handleCambiarCategoria = (ticketId, categoriaId) => {
@@ -335,7 +346,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     <Box
       sx={{
         mt: 4,
-        ml: `calc(${isMenuOpen ? '16rem' : '0px'} + 2rem)`,
+        ml: `calc(${isMenuOpen ? '12rem' : '0px'} + 2rem)`,
         mr: '2rem',
         transition: 'margin-left 0.3s',
       }}
@@ -412,23 +423,17 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
         <NoTicketsMessage filter={filter} />
       ) : (
         <>
-          <Grid container spacing={2}>
-            {ticketsData.tickets.map((ticket) => (
-              <Grid item xs={12} sm={6} md={4} lg={4} key={ticket.id}>
-                <TicketCard
-                  ticket={ticket}
-                  handleOpenModal={handleOpenModal}
-                  handleDeleteTicket={handleDeleteTicket}
-                  onTomarTicket={handleTomarTicket}
-                  onAsignarTicket={handleAsignarTicket}
-                  onCambiarCategoria={handleCambiarCategoria}
-                  usuarios={usuarios}
-                  categorias={categorias}
-                  onOpenHorasModal={handleOpenHorasModal}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          <TicketsTable
+            tickets={ticketsData.tickets}
+            handleOpenModal={handleOpenModal}
+            handleDeleteTicket={handleDeleteTicket}
+            onTomarTicket={handleTomarTicket}
+            onAsignarTicket={handleAsignarTicket}
+            onCambiarCategoria={handleCambiarCategoria}
+            usuarios={usuarios}
+            categorias={categorias}
+            onOpenHorasModal={handleOpenHorasModal}
+          />
 
           <Pagination
             count={Math.ceil((ticketsData.total) / 10)}

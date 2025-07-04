@@ -1,50 +1,32 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import Swal from 'sweetalert2';
-import { toast } from 'react-toastify';
-import CloseIcon from '@mui/icons-material/Close';
-import MenuIcon from '@mui/icons-material/Menu';
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../store/slices/authSlice";
-import React from "react";
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import GroupIcon from '@mui/icons-material/Group';
+import BusinessIcon from '@mui/icons-material/Business';
+import SettingsIcon from '@mui/icons-material/Settings';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Swal from 'sweetalert2';
 
 const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.user);
 
-    const handleLogout = () => {
-        Swal.fire({
-            title: '¿Estás seguro de cerrar sesión?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#A8E6CF',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, cerrar sesión'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                dispatch(logout());
-                navigate("/login");
-                toast.success('Sesión cerrada con éxito');
-            }
-        });
-    };
-
     const adminOptions = [
-        { label: "Todos los Tickets", action: () => { setFilter("all"); navigate("/dashboard"); } },
-        { label: "Tickets asignados", action: () => { setFilter("assigned"); navigate("/dashboard"); } },
-        { label: "Usuarios", action: () => { navigate("/usuarios"); } },
-        { label: "Clientes", action: () => { navigate("/clientes"); } },
-        { label: "Sistemas", action: () => { navigate("/sistemas"); } },
-        { label: "Horas Consumidas", action: () => { navigate("/horas-contrato"); } },
+        { label: "Todos los Tickets", icon: <AssignmentIcon fontSize="small" />, action: () => { setFilter("all"); navigate("/dashboard"); } },
+        { label: "Tickets asignados", icon: <AssignmentIcon fontSize="small" />, action: () => { setFilter("assigned"); navigate("/dashboard"); } },
+        { label: "Usuarios", icon: <GroupIcon fontSize="small" />, action: () => { navigate("/usuarios"); } },
+        { label: "Clientes", icon: <BusinessIcon fontSize="small" />, action: () => { navigate("/clientes"); } },
+        { label: "Sistemas", icon: <SettingsIcon fontSize="small" />, action: () => { navigate("/sistemas"); } },
+        { label: "Horas Consumidas", icon: <AccessTimeIcon fontSize="small" />, action: () => { navigate("/horas-contrato"); } },
     ];
     const clienteOptions = [
-        { label: "Tickets", action: () => { setFilter("all"); navigate("/dashboard"); } },
-        { label: "Horas Consumidas", action: () => { navigate("/horas-contrato"); } },
+        { label: "Tickets", icon: <AssignmentIcon fontSize="small" />, action: () => { setFilter("all"); navigate("/dashboard"); } },
+        { label: "Horas Consumidas", icon: <AccessTimeIcon fontSize="small" />, action: () => { navigate("/horas-contrato"); } },
     ];
 
     const options = user?.user.rol === "admin" ? adminOptions : clienteOptions;
-
     const routeMap = {
         "Todos los Tickets": "/dashboard",
         "Tickets asignados": "/dashboard",
@@ -55,23 +37,20 @@ const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
     };
 
     return (
-        <>
-            <aside className={`
-                fixed top-0 left-0 h-full w-64 z-50
-                bg-white shadow-md p-4
-                flex flex-col justify-between
-                transition-transform duration-300
-                ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-            `}>
-                <div className="flex justify-between items-center">
-                    <span className="text-xl font-bold text-[#2e5d6b]">SICORP</span>
-                    <button onClick={toggleMenu} className="text-gray-600 focus:outline-none">
-                        <CloseIcon />
-                    </button>
-                </div>
-
-                {/* Menú */}
-                <ul className="mt-10 space-y-2">
+        <aside className={`
+            fixed top-0 left-0 h-full w-50 z-40
+            bg-[#fafafa] border-r border-gray-200 shadow-sm p-4
+            flex flex-col
+            transition-transform duration-300
+            ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        `} style={{ marginTop: 65 }}>
+            <div className="flex justify-end items-center mb-6">
+                <button onClick={toggleMenu} className="text-gray-500 focus:outline-none text-base">
+                    ✕
+                </button>
+            </div>
+            <div className="flex-1">
+                <ul className="space-y-1 mt-2">
                     {options.map((opt, idx) => {
                         let isActive = false;
                         if (opt.label === "Todos los Tickets") {
@@ -81,37 +60,27 @@ const Sidebar = ({ setFilter, isMenuOpen, toggleMenu, filter }) => {
                         } else {
                             isActive = location.pathname === routeMap[opt.label];
                         }
-
                         return (
                             <li
                                 key={idx}
-                                onClick={() => {
-                                    opt.action();
-                                }}
-                                className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium
-                        ${isActive
-                                        ? "bg-[#A8E6CF] text-[#2e5d6b]"
-                                        : "hover:bg-[#A8E6CF] hover:text-[#2e5d6b] text-gray-700"
-                                    }`}
+                                onClick={opt.action}
+                                className={`
+                                    flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md text-sm font-normal
+                                    transition-colors
+                                    ${isActive
+                                        ? "bg-[#e0f2f1] text-[#2e5d6b]"
+                                        : "hover:bg-[#e0f7fa] hover:text-[#2e5d6b] text-gray-700"
+                                    }
+                                `}
                             >
+                                {opt.icon}
                                 {opt.label}
                             </li>
                         );
                     })}
                 </ul>
-
-                <button
-                    onClick={handleLogout}
-                    className="mt-4 w-full py-2 rounded-md text-sm font-semibold"
-                    style={{
-                        backgroundColor: '#FFBABA',
-                        color: '#B22222',
-                    }}
-                >
-                    Cerrar sesión
-                </button>
-            </aside>
-        </>
+            </div>
+        </aside>
     );
 };
 

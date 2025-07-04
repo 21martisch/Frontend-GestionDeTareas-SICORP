@@ -1,4 +1,7 @@
 import { Box, TextField, MenuItem, Button, Grid } from "@mui/material";
+import { useSelector } from "react-redux";
+
+
 
 const TicketFilters = ({
   categoria, setCategoria,
@@ -11,6 +14,7 @@ const TicketFilters = ({
   categorias,
   onLimpiar
 }) => {
+  const user = useSelector(state => state.auth.user);
   const hayFiltros =
     categoria ||
     sistemaFiltro ||
@@ -31,9 +35,18 @@ const TicketFilters = ({
       <Grid item xs={12} sm={6} md={2}>
         <TextField select label="Sistema" value={sistemaFiltro} onChange={e => setSistemaFiltro(e.target.value)} fullWidth>
           <MenuItem value="">Todos</MenuItem>
-          {sistemas.map(s => (
-            <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
-          ))}
+          {sistemas
+            .filter(s =>
+              user.user.rol === "admin" ||
+              (
+                Array.isArray(s.usuarios) &&
+                s.usuarios.some(u => String(u.id) === String(user.user.id))
+              )
+            )
+            .map(s => (
+              <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
+            ))
+          }
         </TextField>
       </Grid>
       {clientes.length > 0 && (
