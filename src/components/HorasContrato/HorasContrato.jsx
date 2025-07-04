@@ -7,6 +7,12 @@ import {
 } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 
+const tiposHora = [
+  { value: "soporte", label: "Soporte" },
+  { value: "desarrollo", label: "Desarrollo" },
+  { value: "modificacion", label: "Modificación" }
+];
+
 const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const user = useSelector(state => state.auth.user);
   const token = useSelector(state => state.auth.token);
@@ -17,6 +23,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const [mesSeleccionado, setMesSeleccionado] = useState("");
   const [clientes, setClientes] = useState([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState("");
+  const [tipoSeleccionado, setTipoSeleccionado] = useState("soporte");
 
   useEffect(() => {
     if (user.user.rol === "admin" && clientes.length > 0 && !clienteSeleccionado) {
@@ -88,6 +95,28 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
     )
   ).sort();
 
+  // Mapeo para mostrar los campos correctos según tipoSeleccionado
+  const campos = {
+    soporte: {
+      label: "Soporte",
+      contratadas: "horasSoporte",
+      consumidas: "horasSoporteConsumidas",
+      restantes: "horasSoporteRestantes"
+    },
+    desarrollo: {
+      label: "Desarrollo",
+      contratadas: "horasDesarrollo",
+      consumidas: "horasDesarrolloConsumidas",
+      restantes: "horasDesarrolloRestantes"
+    },
+    modificacion: {
+      label: "Modificación",
+      contratadas: "horasModificacion",
+      consumidas: "horasModificacionConsumidas",
+      restantes: "horasModificacionRestantes"
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -137,15 +166,27 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
                 ))}
               </Select>
             </FormControl>
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>Tipo de Hora</InputLabel>
+              <Select
+                value={tipoSeleccionado}
+                label="Tipo de Hora"
+                onChange={e => setTipoSeleccionado(e.target.value)}
+              >
+                {tiposHora.map(tipo => (
+                  <MenuItem key={tipo.value} value={tipo.value}>{tipo.label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Sistema</TableCell>
-                  <TableCell>Horas Contrato</TableCell>
-                  <TableCell>Horas Consumidas</TableCell>
-                  <TableCell>Horas Restantes</TableCell>
+                  <TableCell>Contratadas</TableCell>
+                  <TableCell>Consumidas</TableCell>
+                  <TableCell>Restantes</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -153,12 +194,13 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
                   const resumen = (resumenes[sistema.id] || []).find(
                     r => `${r.anio}-${String(r.mes).padStart(2, "0")}` === mesSeleccionado
                   );
+                  const campo = campos[tipoSeleccionado];
                   return (
                     <TableRow key={sistema.id}>
                       <TableCell>{sistema.nombre}</TableCell>
-                      <TableCell>{resumen ? resumen.horasContrato : "-"}</TableCell>
-                      <TableCell>{resumen ? resumen.horasConsumidas : "-"}</TableCell>
-                      <TableCell>{resumen ? resumen.horasRestantes : "-"}</TableCell>
+                      <TableCell>{resumen ? resumen[campo.contratadas] : "-"}</TableCell>
+                      <TableCell>{resumen ? resumen[campo.consumidas] : "-"}</TableCell>
+                      <TableCell>{resumen ? resumen[campo.restantes] : "-"}</TableCell>
                     </TableRow>
                   );
                 })}

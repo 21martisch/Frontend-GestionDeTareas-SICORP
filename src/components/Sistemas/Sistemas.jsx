@@ -80,11 +80,13 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
           <TableHead>
             <TableRow>
               <TableCell>Nombre</TableCell>
-              <TableCell>Horas Contrato</TableCell>
+              <TableCell>Horas Soporte</TableCell>
+              <TableCell>Horas Desarrollo</TableCell>
+              <TableCell>Horas Modificación</TableCell>
               <TableCell>Fecha Desde</TableCell>
               <TableCell>Fecha Hasta</TableCell>
               <TableCell>Clientes Asociados</TableCell>
-              <TableCell>Usuarios Asignados</TableCell> 
+              <TableCell>Usuarios Asignados</TableCell>
               <TableCell align="center">Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -97,7 +99,9 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
               sistemas.map((sistema) => (
                 <TableRow key={sistema.id}>
                   <TableCell>{sistema.nombre}</TableCell>
-                  <TableCell>{sistema.horasContrato ?? "-"}</TableCell>
+                  <TableCell>{sistema.horasSoporte ?? "-"}</TableCell>
+                  <TableCell>{sistema.horasDesarrollo ?? "-"}</TableCell>
+                  <TableCell>{sistema.horasModificacion ?? "-"}</TableCell>
                   <TableCell>
                     {sistema.fechaDesde
                       ? sistema.fechaDesde.split("-").reverse().join("/")

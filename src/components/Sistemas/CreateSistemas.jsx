@@ -20,7 +20,9 @@ const CreateSistemas = ({ sistema, onClose }) => {
     fechaDesde: "",
     fechaHasta: "",
     clienteId: "",
-    horasContrato: "",
+    horasSoporte: "",
+    horasDesarrollo: "",
+    horasModificacion: "",
     usuarios: [],
   });
   const token = useSelector((state) => state.auth.token);
@@ -39,9 +41,8 @@ const CreateSistemas = ({ sistema, onClose }) => {
   });
 
   const usuariosDelCliente = Array.isArray(usuarios)
-  ? usuarios.filter((u) => String(u.clienteId) === String(form.clienteId))
-  : [];
-
+    ? usuarios.filter((u) => String(u.clienteId) === String(form.clienteId))
+    : [];
 
   useEffect(() => {
     if (sistema) {
@@ -50,7 +51,9 @@ const CreateSistemas = ({ sistema, onClose }) => {
         fechaDesde: sistema.fechaDesde ? sistema.fechaDesde.slice(0, 10) : "",
         fechaHasta: sistema.fechaHasta ? sistema.fechaHasta.slice(0, 10) : "",
         clienteId: sistema.clienteId || "",
-        horasContrato: sistema.horasContrato || "",
+        horasSoporte: sistema.horasSoporte || "",
+        horasDesarrollo: sistema.horasDesarrollo || "",
+        horasModificacion: sistema.horasModificacion || "",
         usuarios: sistema.usuarios ? sistema.usuarios.map(u => String(u.id)) : [],
       });
     }
@@ -142,10 +145,26 @@ const CreateSistemas = ({ sistema, onClose }) => {
           </Select>
         </FormControl>
         <TextField
-          label="Horas de Contrato"
-          name="horasContrato"
+          label="Horas de Soporte"
+          name="horasSoporte"
           type="number"
-          value={form.horasContrato}
+          value={form.horasSoporte}
+          onChange={handleChange}
+          required
+        />
+        <TextField
+          label="Horas de Desarrollo"
+          name="horasDesarrollo"
+          type="number"
+          value={form.horasDesarrollo}
+          onChange={handleChange}
+          required
+        />
+        <TextField
+          label="Horas de Modificación"
+          name="horasModificacion"
+          type="number"
+          value={form.horasModificacion}
           onChange={handleChange}
           required
         />
