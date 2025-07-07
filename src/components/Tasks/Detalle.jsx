@@ -87,7 +87,7 @@ const Detalle = (props) => {
     if (!nuevoComentario.trim()) return;
     try {
       const { data } = await addComentario(ticketId, nuevoComentario, token);
-      setComentarios([...comentarios, data]);
+      setComentarios([...comentarios, data.comentario]);
       setNuevoComentario("");
     } catch (error) {}
   };
@@ -99,7 +99,7 @@ const Detalle = (props) => {
       const { data } = await addComentario(ticketId, textoRespuesta, token, responderA);
       setComentarios(comentarios.map(com =>
         com.id === responderA
-          ? { ...com, Respuestas: [...(com.Respuestas || []), data] }
+          ? { ...com, Respuestas: [...(com.Respuestas || []), data.comentario] }
           : com
       ));
       setTextoRespuesta("");
