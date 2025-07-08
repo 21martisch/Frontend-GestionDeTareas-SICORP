@@ -11,7 +11,7 @@ const NoTasksMessage = ({ filter }) => {
       case "incomplete":
         return "No hay tareas pendientes.";
       default:
-        return "No hay tareas, oprima el botón 'Agregar tarea'.";
+        return "No hay tickets, oprima el botón 'Agregar tickets'.";
     }
   };
 

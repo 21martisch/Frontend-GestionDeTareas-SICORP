@@ -55,6 +55,8 @@ const Detalle = (props) => {
   const [textoRespuesta, setTextoRespuesta] = useState("");
   const [archivoModalOpen, setArchivoModalOpen] = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
+  const [loadingComentario, setLoadingComentario] = useState(false);
+  const [loadingRespuesta, setLoadingRespuesta] = useState(false);
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -85,16 +87,19 @@ const Detalle = (props) => {
   const handleNuevoComentario = async (e) => {
     e.preventDefault();
     if (!nuevoComentario.trim()) return;
+    setLoadingComentario(true);
     try {
       const { data } = await addComentario(ticketId, nuevoComentario, token);
       setComentarios([...comentarios, data.comentario]);
       setNuevoComentario("");
     } catch (error) {}
+    setLoadingComentario(false);
   };
 
   const handleResponderComentario = async (e) => {
     e.preventDefault();
     if (!textoRespuesta.trim()) return;
+    setLoadingRespuesta(true);
     try {
       const { data } = await addComentario(ticketId, textoRespuesta, token, responderA);
       setComentarios(comentarios.map(com =>
@@ -105,6 +110,7 @@ const Detalle = (props) => {
       setTextoRespuesta("");
       setResponderA(null);
     } catch (error) {}
+    setLoadingRespuesta(false);
   };
 
   if (loading) {
@@ -274,7 +280,16 @@ const Detalle = (props) => {
                         onChange={e => setTextoRespuesta(e.target.value)}
                         placeholder="Escribe una respuesta..."
                       />
-                      <Button type="submit" size="small" variant="contained" sx={{ mt: 1 }}>Enviar</Button>
+                      <Button
+                        type="submit"
+                        size="small"
+                        variant="contained"
+                        sx={{ mt: 1 }}
+                        disabled={loadingRespuesta}
+                        startIcon={loadingRespuesta ? <CircularProgress size={16} /> : null}
+                      >
+                        {loadingRespuesta ? "Enviando..." : "Enviar"}
+                      </Button>
                     </Box>
                   )}
                 </Box>
@@ -288,7 +303,15 @@ const Detalle = (props) => {
                 onChange={e => setNuevoComentario(e.target.value)}
                 placeholder="Agregar un comentario..."
               />
-              <Button type="submit" variant="contained" sx={{ mt: 1 }}>Comentar</Button>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{ mt: 1 }}
+                disabled={loadingComentario}
+                startIcon={loadingComentario ? <CircularProgress size={18} /> : null}
+              >
+                {loadingComentario ? "Enviando..." : "Comentar"}
+              </Button>
             </Box>
           </Box>
         </Paper>
