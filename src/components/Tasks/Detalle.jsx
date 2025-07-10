@@ -15,7 +15,6 @@ import {
   Modal,
   Divider,
   Grid,
-  Stack,
   Avatar
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
@@ -24,7 +23,8 @@ import useAuth from "../../hooks/useAuth";
 import {
   getTicketById,
   getComentarios,
-  addComentario
+  addComentario,
+  getArchivoUrlFirmada
 } from "../../store/apis/ticketsApi";
 
 const getCategoriaChipStyle = (nombre) => {
@@ -55,6 +55,7 @@ const Detalle = (props) => {
   const [textoRespuesta, setTextoRespuesta] = useState("");
   const [archivoModalOpen, setArchivoModalOpen] = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
+  const [archivoSeleccionadoKey, setArchivoSeleccionadoKey] = useState(null);
   const [loadingComentario, setLoadingComentario] = useState(false);
   const [loadingRespuesta, setLoadingRespuesta] = useState(false);
 
@@ -131,6 +132,17 @@ const Detalle = (props) => {
       </Box>
     );
   }
+
+  const handleVerArchivo = async (key) => {
+    try {
+      const { data } = await getArchivoUrlFirmada(key, token);
+      setArchivoSeleccionado(data.url);
+      setArchivoSeleccionadoKey(key);
+      setArchivoModalOpen(true);
+    } catch (error) {
+      alert("No se pudo obtener el archivo.");
+    }
+  };
 
   return (
     <>
@@ -215,13 +227,13 @@ const Detalle = (props) => {
                 Archivos adjuntos:
               </Typography>
               <List dense sx={{ maxHeight: 200, overflowY: "auto", border: "1px solid #eee", borderRadius: 1 }}>
-                {ticket.archivosAdjuntos.map((url, idx) => {
-                  const nombre = decodeURIComponent(url.split("/").pop());
+                {ticket.archivosAdjuntos.map((key, idx) => {
+                  const nombre = decodeURIComponent(key.split("/").pop());
                   return (
-                    <ListItem key={url} divider>
+                    <ListItem key={key} divider>
                       <ListItemText primary={nombre} />
                       <ListItemSecondaryAction>
-                        <IconButton edge="end" onClick={() => { setArchivoSeleccionado(url); setArchivoModalOpen(true); }}>
+                        <IconButton edge="end" onClick={() => handleVerArchivo(key)}>
                           <Visibility />
                         </IconButton>
                       </ListItemSecondaryAction>
@@ -333,7 +345,7 @@ const Detalle = (props) => {
         >
           {archivoSeleccionado && (
             <>
-              {/\.(pdf)$/i.test(archivoSeleccionado) ? (
+              {/\.(pdf)$/i.test(archivoSeleccionadoKey) ? (
                 <iframe
                   src={archivoSeleccionado}
                   title="Archivo PDF"

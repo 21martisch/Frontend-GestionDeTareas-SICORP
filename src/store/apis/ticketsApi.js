@@ -70,3 +70,8 @@ export const addComentario = (ticketId, texto, token, parentId = null) =>
     parentId ? { texto, parentId } : { texto },
     { headers: { Authorization: `Bearer ${token}` } }
   );
+
+export const getArchivoUrlFirmada = (key, token) =>
+  axios.get(`${API_URL}/tickets/archivo-url/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
