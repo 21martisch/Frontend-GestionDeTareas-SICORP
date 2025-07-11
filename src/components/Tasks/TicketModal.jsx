@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Modal, Box, TextField, Button, MenuItem, Alert, Grid } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
+import { LoadingButton } from "@mui/lab";
 
 const prioridades = [
   { value: "Alta", label: "Alta" },
@@ -36,6 +38,7 @@ const TicketModal = ({
   const [categoriaTipo, setCategoriaTipo] = useState("");
   const [alerta, setAlerta] = useState("");
   const usuario = useSelector(state => state.auth.user);
+  const [loading, setLoading] = useState(false);
 
   const clienteIdFinal = clientes.length > 0 ? clienteId : usuario?.user?.clienteId;
 
@@ -103,32 +106,38 @@ const TicketModal = ({
     setAlerta("");
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!titulo.trim() || !sistemaId) {
       setAlerta("Debes completar el título y seleccionar un sistema.");
       return;
     }
     setAlerta("");
-    const formData = new FormData();
-    formData.append("titulo", titulo);
-    if (descripcion) formData.append("descripcion", descripcion);
-    formData.append("sistemaId", sistemaId);
-    formData.append("prioridad", prioridad);
-    formData.append("categoriaTipo", categoriaTipo);
-    if (archivosAdjuntos && archivosAdjuntos.length > 0) {
-      archivosAdjuntos.forEach(file => {
-        formData.append("archivosAdjuntos", file);
-      });
-    }
-    if (initialTicket?.id) formData.append("id", initialTicket.id);
-    if (clientes.length > 0 && clienteId) {
-      formData.append("clienteId", clienteId);
-    } else if (usuario?.rol === "cliente" && usuario?.clienteId) {
-      formData.append("clienteId", usuario.clienteId);
-    }
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("titulo", titulo);
+      if (descripcion) formData.append("descripcion", descripcion);
+      formData.append("sistemaId", sistemaId);
+      formData.append("prioridad", prioridad);
+      formData.append("categoriaTipo", categoriaTipo);
+      if (archivosAdjuntos && archivosAdjuntos.length > 0) {
+        archivosAdjuntos.forEach(file => {
+          formData.append("archivosAdjuntos", file);
+        });
+      }
+      if (initialTicket?.id) formData.append("id", initialTicket.id);
+      if (clientes.length > 0 && clienteId) {
+        formData.append("clienteId", clienteId);
+      } else if (usuario?.rol === "cliente" && usuario?.clienteId) {
+        formData.append("clienteId", usuario.clienteId);
+      }
 
-    handleSubmit(formData);
+      await handleSubmit(formData);
+      handleClose();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRemoveArchivo = (index) => {
@@ -296,9 +305,20 @@ const TicketModal = ({
             />
           </Grid>
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary" fullWidth>
+            <LoadingButton
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              loading={loading}
+              loadingIndicator={
+                initialTicket
+                  ? "Actualizando..."
+                  : "Agregando..."
+              }
+            >
               {initialTicket ? "Actualizar ticket" : "Agregar ticket"}
-            </Button>
+            </LoadingButton>
           </Grid>
         </Grid>
       </Box>

@@ -151,7 +151,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     mutationFn: (newTicket) => createTicket(newTicket, token),
     onSuccess: () => {
       queryClient.invalidateQueries(["tickets"]);
-      handleCloseModal();
+      //handleCloseModal();
       toast.success('Ticket agregado con éxito');
     },
   });
@@ -160,7 +160,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     mutationFn: ({ id, formData }) => updateTicket(id, formData, token),
     onSuccess: () => {
       queryClient.invalidateQueries(["tickets"]);
-      handleCloseModal();
+      //handleCloseModal();
       toast.success('Ticket actualizado con éxito');
     },
   });
@@ -233,7 +233,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     if (user?.user.rol === "cliente" && cliente) {
       formData.append("clienteId", cliente.id);
     }
-    addTicketMutation.mutate(formData);
+    return addTicketMutation.mutateAsync(formData);
   };
 
   const handleDeleteTicket = (ticketId) => {
@@ -281,9 +281,9 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
 
   const handleSubmitTicket = (formData) => {
     if (initialTicket && initialTicket.id) {
-      updateTicketMutation.mutate({ id: initialTicket.id, formData });
+      return updateTicketMutation.mutateAsync({ id: initialTicket.id, formData });
     } else {
-      handleAddTicket(formData);
+      return handleAddTicket(formData);
     }
   };
   const handleOpenHorasModal = (ticket) => {
