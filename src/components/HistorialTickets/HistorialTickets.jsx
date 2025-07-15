@@ -52,7 +52,9 @@ const HistorialTickets = ({
                         <MenuIcon />
                     </IconButton>
                 )}
-                <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Tickets Cerrados</Typography>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.2rem', lg: '1.5rem' } }}>
+                    Tickets Cerrados
+                </Typography>
             </Box>
             {user?.user.rol === "admin" && (
                 <Box sx={{ mb: 2 }}>

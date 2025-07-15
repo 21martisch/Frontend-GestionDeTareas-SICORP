@@ -356,7 +356,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.2rem', lg: '1.5rem' } }}>
           Panel de Tickets
         </Typography>
         <Button

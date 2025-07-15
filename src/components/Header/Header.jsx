@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AppBar, Toolbar, Typography, Box, IconButton, Divider } from "@mui/material";
+import { AppBar, Toolbar, Typography, Box, IconButton, Divider, Stack } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -50,6 +50,33 @@ const Header = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const notificationTypeLabel = (n) => {
+    switch (n.tipo) {
+      case "nuevo_ticket": return "Nuevo Ticket";
+      case "cambio_estado": return "Cambio de Estado";
+      case "nuevo_comentario": return "Comentario";
+      default: return "Notificación";
+    }
+  };
+
+  const notificationInfo = (n) => {
+    if (n.tipo === "nuevo_comentario") {
+      if (n.Comentario?.archivosAdjuntos?.length) return "Comentario con archivo adjunto";
+      return n.Comentario
+        ? n.Comentario.texto.slice(0, 40) + (n.Comentario.texto.length > 40 ? "..." : "")
+        : "Nuevo comentario";
+    }
+    if (n.tipo === "nuevo_ticket") return "Nuevo Ticket creado";
+    if (n.tipo === "cambio_estado") return "El estado del ticket cambió";
+    return "";
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return d.toLocaleString();
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -76,10 +103,18 @@ const Header = () => {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={() => setAnchorEl(null)}
-            PaperProps={{ sx: { minWidth: 280 } }}
+            PaperProps={{
+              sx: {
+                minWidth: 260,
+                maxHeight: 280,
+                p: 0.5,
+                bgcolor: "#fafbfc",
+                overflowY: "auto"
+              }
+            }}
           >
             {(Array.isArray(notificaciones) && notificaciones.length === 0) && (
-              <MenuItem disabled>No hay notificaciones</MenuItem>
+              <MenuItem disabled sx={{ fontSize: "0.85rem", color: "#888", py: 1 }}>No hay notificaciones</MenuItem>
             )}
             {(Array.isArray(notificaciones) ? notificaciones : []).map(n => (
               <MenuItem
@@ -90,19 +125,24 @@ const Header = () => {
                   setAnchorEl(null);
                   navigate(`/detalle/${n.Ticket?.id}`);
                 }}
-                sx={{ cursor: "pointer" }}
+                sx={{
+                  cursor: "pointer",
+                  alignItems: "flex-start",
+                  py: 0.5,
+                  fontSize: "0.85rem",
+                  whiteSpace: "normal",
+                  borderBottom: "1px solid #f0f0f0",
+                  "&:last-child": { borderBottom: "none" }
+                }}
               >
-                {n.tipo === "nuevo_ticket" && "Nuevo Ticket creado"}
-                {n.tipo === "cambio_estado" && "El estado del ticket cambió"}
-                {n.tipo === "nuevo_comentario" && (
-                  n.Comentario
-                    ? n.Comentario.texto.slice(0, 40) + (n.Comentario.texto.length > 40 ? "..." : "")
-                    : "Nuevo comentario"
-                )}
-                <br />
-                <Typography variant="caption" color="text.secondary" sx={{ml: 2}}>
-                  Ticket Id {n.Ticket?.id}: {n.Ticket?.titulo || "-"}
-                </Typography>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.3 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1976d2", fontSize: "0.9rem" }}>
+                    {notificationTypeLabel(n)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#222", fontSize: "0.85rem", fontWeight: 400 }}>
+                    Ticket #{n.Ticket?.id}: {n.Ticket?.titulo || "-"}
+                  </Typography>
+                </Box>
               </MenuItem>
             ))}
             {(Array.isArray(notificaciones) && notificaciones.length > 0) && (
@@ -112,7 +152,14 @@ const Header = () => {
                   setNotificaciones([]);
                   setAnchorEl(null);
                 }}
-                sx={{ color: "#1976d2", fontWeight: 700 }}
+                sx={{
+                  color: "#1976d2",
+                  fontWeight: 700,
+                  fontSize: "0.95rem",
+                  justifyContent: "center",
+                  py: 1,
+                  borderBottom: "none"
+                }}
               >
                 Marcar todas como leídas
               </MenuItem>

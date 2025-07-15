@@ -7,6 +7,19 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, CircularProgress, Box, MenuItem, Select, FormControl, InputLabel, IconButton
 } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
+import { styled } from "@mui/material/styles";
+
+// Estilos comprimidos para la tabla
+const SmallTableCell = styled(TableCell)({
+  padding: "6px 10px",
+  fontSize: "0.95rem",
+});
+const SmallTableRow = styled(TableRow)({
+  height: 36,
+  "&:hover": {
+    background: "#f5f7fa"
+  }
+});
 
 const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const user = useSelector(state => state.auth.user);
@@ -118,7 +131,9 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Horas Consumidas</Typography>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.2rem', lg: '1.5rem' } }}>
+          Horas Consumidas
+        </Typography>
       </Box>
       {loading ? (
         <CircularProgress />
@@ -126,61 +141,67 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
         <>
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
             {user.user.rol === "admin" && (
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel>Cliente</InputLabel>
+              <FormControl sx={{ minWidth: 160 }}>
+                <InputLabel sx={{ fontSize: "0.95rem" }}>Cliente</InputLabel>
                 <Select
                   value={clienteSeleccionado}
                   label="Cliente"
                   onChange={e => setClienteSeleccionado(e.target.value)}
+                  size="small"
+                  sx={{ fontSize: "0.95rem" }}
                 >
                   {clientes.map(cliente => (
-                    <MenuItem key={cliente.id} value={cliente.id}>{cliente.nombre}</MenuItem>
+                    <MenuItem key={cliente.id} value={cliente.id} sx={{ fontSize: "0.95rem" }}>{cliente.nombre}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             )}
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Mes</InputLabel>
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel sx={{ fontSize: "0.95rem" }}>Mes</InputLabel>
               <Select
                 value={mesSeleccionado}
                 label="Mes"
                 onChange={e => setMesSeleccionado(e.target.value)}
+                size="small"
+                sx={{ fontSize: "0.95rem" }}
               >
                 {mesesDisponibles.map(mes => (
-                  <MenuItem key={mes} value={mes}>
+                  <MenuItem key={mes} value={mes} sx={{ fontSize: "0.95rem" }}>
                     {mes.split("-")[1]}/{mes.split("-")[0]}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Tipo de Hora</InputLabel>
+            <FormControl sx={{ minWidth: 140 }}>
+              <InputLabel sx={{ fontSize: "0.95rem" }}>Tipo de Hora</InputLabel>
               <Select
                 value={categoriaSeleccionada}
                 label="Tipo de Hora"
                 onChange={e => setCategoriaSeleccionada(e.target.value)}
+                size="small"
+                sx={{ fontSize: "0.95rem" }}
               >
                 {categorias.map(cat => (
-                  <MenuItem key={cat.id} value={cat.nombre}>{cat.nombre}</MenuItem>
+                  <MenuItem key={cat.id} value={cat.nombre} sx={{ fontSize: "0.95rem" }}>{cat.nombre}</MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Box>
-          <TableContainer component={Paper}>
-            <Table>
+          <TableContainer component={Paper} sx={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.03)" }}>
+            <Table size="small">
               <TableHead>
-                <TableRow>
-                  <TableCell>Sistema</TableCell>
+                <SmallTableRow sx={{ background: "#f5f5f5" }}>
+                  <SmallTableCell>Sistema</SmallTableCell>
                   {categoriasFiltradas.map(cat => (
-                    <TableCell key={cat.id} align="center"> Horas Contratadas</TableCell>
+                    <SmallTableCell key={cat.id} align="center">Horas Contratadas</SmallTableCell>
                   ))}
                   {categoriasFiltradas.map(cat => (
-                    <TableCell key={cat.id + "-consumidas"} align="center">Horas Consumidas</TableCell>
+                    <SmallTableCell key={cat.id + "-consumidas"} align="center">Horas Consumidas</SmallTableCell>
                   ))}
                   {categoriasFiltradas.map(cat => (
-                    <TableCell key={cat.id + "-restantes"} align="center">Horas Restantes</TableCell>
+                    <SmallTableCell key={cat.id + "-restantes"} align="center">Horas Restantes</SmallTableCell>
                   ))}
-                </TableRow>
+                </SmallTableRow>
               </TableHead>
               <TableBody>
                 {sistemasFiltrados.map(sistema => {
@@ -188,30 +209,30 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
                     r => `${r.anio}-${String(r.mes).padStart(2, "0")}` === mesSeleccionado
                   );
                   return (
-                    <TableRow key={sistema.id}>
-                      <TableCell>{sistema.nombre}</TableCell>
+                    <SmallTableRow key={sistema.id}>
+                      <SmallTableCell>{sistema.nombre}</SmallTableCell>
                       {categoriasFiltradas.map(cat => (
-                        <TableCell key={cat.id} align="center">
+                        <SmallTableCell key={cat.id} align="center">
                           {resumen
                             ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasContratadas ?? "-")
                             : "-"}
-                        </TableCell>
+                        </SmallTableCell>
                       ))}
                       {categoriasFiltradas.map(cat => (
-                        <TableCell key={cat.id + "-consumidas"} align="center">
+                        <SmallTableCell key={cat.id + "-consumidas"} align="center">
                           {resumen
                             ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasConsumidas ?? "-")
                             : "-"}
-                        </TableCell>
+                        </SmallTableCell>
                       ))}
                       {categoriasFiltradas.map(cat => (
-                        <TableCell key={cat.id + "-restantes"} align="center">
+                        <SmallTableCell key={cat.id + "-restantes"} align="center">
                           {resumen
                             ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasRestantes ?? "-")
                             : "-"}
-                        </TableCell>
+                        </SmallTableCell>
                       ))}
-                    </TableRow>
+                    </SmallTableRow>
                   );
                 })}
               </TableBody>

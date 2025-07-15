@@ -24,17 +24,25 @@ const TicketFilters = ({
 
   const soloFiltroCliente = (!categorias.length && !sistemas.length);
 
+  // Estilos comprimidos
+  const inputProps = { sx: { fontSize: "0.85rem", padding: "6px 8px" } };
+  const labelProps = { sx: { fontSize: "0.85rem" } };
+  const buttonProps = { size: "small", sx: { fontSize: "0.8rem", py: 0.5 } };
+
   if (soloClienteSistema) {
     const clientesArray = Array.isArray(clientes) ? clientes : [];
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={4}>
+      <Grid container spacing={1} sx={{ mb: 1 }}>
+        <Grid item xs={6} sm={4}>
           <TextField
             select
             label="Sistema"
             value={sistemaFiltro}
             onChange={e => setSistemaFiltro(e.target.value)}
             fullWidth
+            InputProps={inputProps}
+            InputLabelProps={labelProps}
+            size="small"
           >
             <MenuItem value="">Todos</MenuItem>
             {sistemas
@@ -46,32 +54,35 @@ const TicketFilters = ({
                 )
               )
               .map(s => (
-                <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
+                <MenuItem key={s.id} value={s.id} sx={{ fontSize: "0.85rem" }}>{s.nombre}</MenuItem>
               ))
             }
           </TextField>
         </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={6} sm={4}>
           <TextField
             select
             label="Cliente"
             value={clienteFiltro}
             onChange={e => setClienteFiltro(e.target.value)}
             fullWidth
+            InputProps={inputProps}
+            InputLabelProps={labelProps}
+            size="small"
           >
             <MenuItem value="">Todos</MenuItem>
             {clientesArray.map(c => (
-              <MenuItem key={c.id} value={c.id}>{c.nombre}</MenuItem>
+              <MenuItem key={c.id} value={c.id} sx={{ fontSize: "0.85rem" }}>{c.nombre}</MenuItem>
             ))}
           </TextField>
         </Grid>
         {!sinBotones && (
           <>
-            <Grid item xs={12} sm={6} md={2}>
-              <Button variant="outlined" onClick={onFiltrar} fullWidth>Filtrar</Button>
+            <Grid item xs={6} sm={2}>
+              <Button variant="outlined" onClick={onFiltrar} fullWidth {...buttonProps}>Filtrar</Button>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              <Button variant="text" color="secondary" onClick={onLimpiar} fullWidth>Limpiar</Button>
+            <Grid item xs={6} sm={2}>
+              <Button variant="text" color="secondary" onClick={onLimpiar} fullWidth {...buttonProps}>Limpiar</Button>
             </Grid>
           </>
         )}
@@ -80,37 +91,37 @@ const TicketFilters = ({
   }
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={1} sx={{ mb: 1 }}>
       {soloFiltroCliente ? (
         <>
           {clientes.length > 0 && (
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField select label="Cliente" value={clienteFiltro} onChange={e => setClienteFiltro(e.target.value)} fullWidth>
+            <Grid item xs={6} sm={3}>
+              <TextField select label="Cliente" value={clienteFiltro} onChange={e => setClienteFiltro(e.target.value)} fullWidth size="small" InputProps={inputProps} InputLabelProps={labelProps}>
                 <MenuItem value="">Todos</MenuItem>
                 {clientes.map(c => (
-                  <MenuItem key={c.id} value={c.id}>{c.nombre}</MenuItem>
+                  <MenuItem key={c.id} value={c.id} sx={{ fontSize: "0.85rem" }}>{c.nombre}</MenuItem>
                 ))}
               </TextField>
             </Grid>
           )}
           {clienteFiltro && (
-            <Grid item xs={12} sm={6} md={2}>
-              <Button variant="text" color="secondary" onClick={onLimpiar} fullWidth>Limpiar</Button>
+            <Grid item xs={6} sm={2}>
+              <Button variant="text" color="secondary" onClick={onLimpiar} fullWidth {...buttonProps}>Limpiar</Button>
             </Grid>
           )}
         </>
       ) : (
         <>
-          <Grid item xs={12} sm={6} md={2}>
-            <TextField select label="Estado" value={categoria} onChange={e => setCategoria(e.target.value)} fullWidth>
+          <Grid item xs={6} sm={2}>
+            <TextField select label="Estado" value={categoria} onChange={e => setCategoria(e.target.value)} fullWidth size="small" InputProps={inputProps} InputLabelProps={labelProps}>
               <MenuItem value="">Todas</MenuItem>
               {categorias.map(c => (
-                <MenuItem key={c.id} value={c.id}>{c.nombre}</MenuItem>
+                <MenuItem key={c.id} value={c.id} sx={{ fontSize: "0.85rem" }}>{c.nombre}</MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <TextField select label="Sistema" value={sistemaFiltro} onChange={e => setSistemaFiltro(e.target.value)} fullWidth>
+          <Grid item xs={6} sm={2}>
+            <TextField select label="Sistema" value={sistemaFiltro} onChange={e => setSistemaFiltro(e.target.value)} fullWidth size="small" InputProps={inputProps} InputLabelProps={labelProps}>
               <MenuItem value="">Todos</MenuItem>
               {sistemas
                 .filter(s =>
@@ -121,33 +132,33 @@ const TicketFilters = ({
                   )
                 )
                 .map(s => (
-                  <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
+                  <MenuItem key={s.id} value={s.id} sx={{ fontSize: "0.85rem" }}>{s.nombre}</MenuItem>
                 ))
               }
             </TextField>
           </Grid>
           {clientes.length > 0 && (
-            <Grid item xs={12} sm={6} md={2}>
-              <TextField select label="Cliente" value={clienteFiltro} onChange={e => setClienteFiltro(e.target.value)} fullWidth>
+            <Grid item xs={6} sm={2}>
+              <TextField select label="Cliente" value={clienteFiltro} onChange={e => setClienteFiltro(e.target.value)} fullWidth size="small" InputProps={inputProps} InputLabelProps={labelProps}>
                 <MenuItem value="">Todos</MenuItem>
                 {clientes.map(c => (
-                  <MenuItem key={c.id} value={c.id}>{c.nombre}</MenuItem>
+                  <MenuItem key={c.id} value={c.id} sx={{ fontSize: "0.85rem" }}>{c.nombre}</MenuItem>
                 ))}
               </TextField>
             </Grid>
           )}
-          <Grid item xs={12} sm={6} md={2}>
-            <TextField type="date" label="Fecha inicio" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
+          <Grid item xs={6} sm={2}>
+            <TextField type="date" label="Fecha inicio" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} InputLabelProps={{ shrink: true, ...labelProps }} fullWidth size="small" InputProps={inputProps} />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <TextField type="date" label="Fecha fin" value={fechaFin} onChange={e => setFechaFin(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
+          <Grid item xs={6} sm={2}>
+            <TextField type="date" label="Fecha fin" value={fechaFin} onChange={e => setFechaFin(e.target.value)} InputLabelProps={{ shrink: true, ...labelProps }} fullWidth size="small" InputProps={inputProps} />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <Button variant="outlined" onClick={onFiltrar} fullWidth>Filtrar</Button>
+          <Grid item xs={6} sm={2}>
+            <Button variant="outlined" onClick={onFiltrar} fullWidth {...buttonProps}>Filtrar</Button>
           </Grid>
           {hayFiltros && (
-            <Grid item xs={12} sm={6} md={1}>
-              <Button variant="text" color="secondary" onClick={onLimpiar} fullWidth>Limpiar</Button>
+            <Grid item xs={6} sm={1}>
+              <Button variant="text" color="secondary" onClick={onLimpiar} fullWidth {...buttonProps}>Limpiar</Button>
             </Grid>
           )}
         </>
