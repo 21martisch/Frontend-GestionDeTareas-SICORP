@@ -7,11 +7,13 @@ import {
   InputLabel,
   Select,
   FormControl,
+  Typography
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { getClientes } from "../../store/apis/clientesApi";
 import { getUsuarios } from "../../store/apis/usuariosApi";
+import { getCategorias } from "../../store/apis/categoriasApi";
 import { createSistema, updateSistema } from "../../store/apis/sistemasApi";
 
 const CreateSistemas = ({ sistema, onClose }) => {
@@ -20,11 +22,9 @@ const CreateSistemas = ({ sistema, onClose }) => {
     fechaDesde: "",
     fechaHasta: "",
     clienteId: "",
-    horasSoporte: "",
-    horasDesarrollo: "",
-    horasModificacion: "",
     usuarios: [],
   });
+  const [categoriasHoras, setCategoriasHoras] = useState([]);
   const token = useSelector((state) => state.auth.token);
   const queryClient = useQueryClient();
 
@@ -40,6 +40,12 @@ const CreateSistemas = ({ sistema, onClose }) => {
     enabled: !!token,
   });
 
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: () => getCategorias(token).then(res => res.data),
+    enabled: !!token,
+  });
+
   const usuariosDelCliente = Array.isArray(usuarios)
     ? usuarios.filter((u) => String(u.clienteId) === String(form.clienteId))
     : [];
@@ -51,11 +57,18 @@ const CreateSistemas = ({ sistema, onClose }) => {
         fechaDesde: sistema.fechaDesde ? sistema.fechaDesde.slice(0, 10) : "",
         fechaHasta: sistema.fechaHasta ? sistema.fechaHasta.slice(0, 10) : "",
         clienteId: sistema.clienteId || "",
-        horasSoporte: sistema.horasSoporte || "",
-        horasDesarrollo: sistema.horasDesarrollo || "",
-        horasModificacion: sistema.horasModificacion || "",
         usuarios: sistema.usuarios ? sistema.usuarios.map(u => String(u.id)) : [],
       });
+      setCategoriasHoras(
+        sistema.Categoria
+          ? sistema.Categoria.map(cat => ({
+              categoriaId: cat.id,
+              horasContratadas: cat.SistemaCategoriaHoras?.horasContratadas ?? ""
+            }))
+          : []
+      );
+    } else {
+      setCategoriasHoras([]);
     }
   }, [sistema]);
 
@@ -66,7 +79,7 @@ const CreateSistemas = ({ sistema, onClose }) => {
         usuarios: [],
       }));
     }
-  }, [form.clienteId]);
+  }, [form.clienteId, sistema]);
 
   const mutation = useMutation({
     mutationFn: async (data) => {
@@ -97,9 +110,26 @@ const CreateSistemas = ({ sistema, onClose }) => {
     }));
   };
 
+  const handleCategoriaChange = (idx, field, value) => {
+    setCategoriasHoras(prev =>
+      prev.map((ch, i) => i === idx ? { ...ch, [field]: value } : ch)
+    );
+  };
+
+  const handleAddCategoria = () => {
+    setCategoriasHoras(prev => [...prev, { categoriaId: "", horasContratadas: "" }]);
+  };
+
+  const handleRemoveCategoria = (idx) => {
+    setCategoriasHoras(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    mutation.mutate(form);
+    mutation.mutate({
+      ...form,
+      categoriasHoras: categoriasHoras.filter(ch => ch.categoriaId && ch.horasContratadas)
+    });
   };
 
   return (
@@ -144,30 +174,33 @@ const CreateSistemas = ({ sistema, onClose }) => {
             ))}
           </Select>
         </FormControl>
-        <TextField
-          label="Horas de Soporte"
-          name="horasSoporte"
-          type="number"
-          value={form.horasSoporte}
-          onChange={handleChange}
-          required
-        />
-        <TextField
-          label="Horas de Desarrollo"
-          name="horasDesarrollo"
-          type="number"
-          value={form.horasDesarrollo}
-          onChange={handleChange}
-          required
-        />
-        <TextField
-          label="Horas de Modificación"
-          name="horasModificacion"
-          type="number"
-          value={form.horasModificacion}
-          onChange={handleChange}
-          required
-        />
+        <Typography variant="subtitle1">Categorías y Horas Contratadas</Typography>
+        {categoriasHoras.map((ch, idx) => (
+          <Box key={idx} display="flex" gap={2} alignItems="center">
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel id={`categoria-label-${idx}`}>Categoría</InputLabel>
+              <Select
+                labelId={`categoria-label-${idx}`}
+                value={ch.categoriaId}
+                label="Categoría"
+                onChange={e => handleCategoriaChange(idx, "categoriaId", e.target.value)}
+              >
+                {categorias.map(cat => (
+                  <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              label="Horas Contratadas"
+              type="number"
+              value={ch.horasContratadas}
+              onChange={e => handleCategoriaChange(idx, "horasContratadas", e.target.value)}
+              required
+            />
+            <Button onClick={() => handleRemoveCategoria(idx)} color="error">Quitar</Button>
+          </Box>
+        ))}
+        <Button onClick={handleAddCategoria} variant="outlined">Agregar Categoría</Button>
         <FormControl>
           <InputLabel id="usuarios-label">Usuarios asignados</InputLabel>
           <Select

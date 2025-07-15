@@ -87,7 +87,7 @@ const TicketsTable = ({
 
   const handleCambiarCategoria = (ticket) => {
     if (
-      ticket.Categorium?.nombre === "Abierto" &&
+      ticket.Estado?.nombre === "Abierto" &&
       !ticket.tomado &&
       !ticket.usuarioAsignado
     ) {
@@ -159,15 +159,15 @@ const TicketsTable = ({
                 <TableCell>
                   <Chip
                     size="small"
-                    label={ticket.categoriaTipo}
+                    label={ticket.Categorium?.nombre || "-"}
                     color="primary"
                     sx={{ fontWeight: 500, bgcolor: "#e3f2fd", color: "#1976d2" }}
                   />
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={ticket.Categorium?.nombre || "-"}
-                    sx={getCategoriaChipStyle(ticket.Categorium?.nombre)}
+                    label={ticket.Estado?.nombre || "-"}
+                    sx={getCategoriaChipStyle(ticket.Estado?.nombre)}
                     size="small"
                     clickable={user?.user.rol !== "cliente"}
                     onClick={user?.user.rol !== "cliente" ? () => handleCambiarCategoria(ticket) : undefined}
@@ -185,7 +185,7 @@ const TicketsTable = ({
                 )}
                 <TableCell>
                   <Box sx={{ display: "flex", gap: 0.5 }}>
-                    {user?.user.rol === "admin" && ticket.Categorium?.nombre !== "Cerrado"  && (
+                    {user?.user.rol === "admin" && ticket.Estado?.nombre !== "Cerrado"  && (
                       <>
                         {!ticket.tomado && (
                           <IconButton onClick={() => handleTomar(ticket)}  title="Tomar">
@@ -197,20 +197,20 @@ const TicketsTable = ({
                         </IconButton>
                       </>
                     )}
-                    {ticket.Categorium?.nombre === "Abierto" && (
+                    {ticket.Estado?.nombre === "Abierto" && (
                       <IconButton onClick={() => handleOpenModal(ticket)}>
                         <Edit />
                       </IconButton>
                     )}
                     {(
-                      (user?.user.rol === "cliente" && ticket.Categorium?.nombre === "Abierto") ||
+                      (user?.user.rol === "cliente" && ticket.Estado?.nombre === "Abierto") ||
                       (user?.user.rol !== "cliente")
                     ) && (
                       <IconButton onClick={() => handleDeleteTicket(ticket.id)}>
                         <Delete />
                       </IconButton>
                     )}
-                    {user?.user.rol === "admin" && ticket.Categorium?.nombre === "Cerrado" && !ticket.horasCargadas && (
+                    {user?.user.rol === "admin" && ticket.Estado?.nombre === "Cerrado" && !ticket.horasCargadas && (
                       <IconButton
                         variant="outlined"
                         color="secondary"

@@ -4,24 +4,37 @@ import TicketsTable from "../Tasks/TicketTable";
 import TicketFilters from "../Tasks/TicketFilters";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import Pagination from "@mui/material/Pagination";
 
-const HistorialTickets = ({ isMenuOpen, toggleMenu, tickets, clientes, ...props }) => {
+const HistorialTickets = ({
+    isMenuOpen,
+    toggleMenu,
+    tickets,
+    total,
+    clientes,
+    sistemas,
+    page,
+    setPage,
+    ...props
+}) => {
     const [clienteFiltro, setClienteFiltro] = useState("");
+    const [sistemaFiltro, setSistemaFiltro] = useState("");
     const user = useSelector((state) => state.auth.user);
 
-    let ticketsCerrados = tickets.filter(
-        t => t.Categorium?.nombre === "Cerrado" && t.horasCargadas > 0
+    let ticketsFiltrados = tickets.filter(
+    t => t.Estado?.nombre === "Cerrado" && t.horasCargadas > 0
     );
 
-    if (user?.user.rol === "cliente") {
-        ticketsCerrados = ticketsCerrados.filter(
-            t => String(t.Usuario?.id) === String(user.user.id)
+    if (user?.user.rol === "admin") {
+        ticketsFiltrados = ticketsFiltrados.filter(
+            t => (!clienteFiltro || String(t.Cliente?.id) === String(clienteFiltro)) &&
+                 (!sistemaFiltro || String(t.Sistema?.id) === String(sistemaFiltro))
         );
     }
 
-    if (user?.user.rol === "admin") {
-        ticketsCerrados = ticketsCerrados.filter(
-            t => !clienteFiltro || String(t.Cliente?.id) === String(clienteFiltro)
+    if (user?.user.rol === "cliente") {
+        ticketsFiltrados = ticketsFiltrados.filter(
+            t => String(t.Usuario?.id) === String(user.user.id)
         );
     }
 
@@ -44,20 +57,22 @@ const HistorialTickets = ({ isMenuOpen, toggleMenu, tickets, clientes, ...props 
             {user?.user.rol === "admin" && (
                 <Box sx={{ mb: 2 }}>
                     <TicketFilters
-                        categoria="" setCategoria={() => { }}
-                        categorias={[]}
-                        sistemaFiltro="" setSistemaFiltro={() => { }}
-                        sistemas={[]}
+                        soloClienteSistema
+                        sinBotones
+                        sistemaFiltro={sistemaFiltro} setSistemaFiltro={setSistemaFiltro}
+                        sistemas={sistemas}
                         clienteFiltro={clienteFiltro} setClienteFiltro={setClienteFiltro}
                         clientes={clientes}
-                        fechaInicio="" setFechaInicio={() => { }}
-                        fechaFin="" setFechaFin={() => { }}
-                        onFiltrar={() => { }}
-                        onLimpiar={() => setClienteFiltro("")}
                     />
                 </Box>
             )}
-            <TicketsTable tickets={ticketsCerrados} {...props} />
+            <TicketsTable tickets={ticketsFiltrados} {...props} />
+            <Pagination
+                count={Math.ceil(total / 10)}
+                page={page}
+                onChange={(e, value) => setPage(value)}
+                sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}
+            />
         </Box>
     );
 };

@@ -12,6 +12,7 @@ import {
   getSistemas,
   deleteSistema
 } from "../../store/apis/sistemasApi";
+import { getCategorias } from "../../store/apis/categoriasApi";
 
 const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   const [openModal, setOpenModal] = useState(false);
@@ -22,6 +23,12 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   const { data: sistemas = [], isLoading } = useQuery({
     queryKey: ["sistemas"],
     queryFn: () => getSistemas({}, token).then(res => res.data),
+  });
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: () => getCategorias(token).then(res => res.data),
+    enabled: !!token,
   });
 
   const deleteSistemaMutation = useMutation({
@@ -53,7 +60,7 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   };
 
   return (
-    <Box >
+    <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         {!isMenuOpen && (
           <IconButton
@@ -80,9 +87,9 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
           <TableHead>
             <TableRow>
               <TableCell>Nombre</TableCell>
-              <TableCell>Horas Soporte</TableCell>
-              <TableCell>Horas Desarrollo</TableCell>
-              <TableCell>Horas Modificación</TableCell>
+              {categorias.map(cat => (
+                <TableCell key={cat.id}>{cat.nombre}</TableCell>
+              ))}
               <TableCell>Fecha Desde</TableCell>
               <TableCell>Fecha Hasta</TableCell>
               <TableCell>Clientes Asociados</TableCell>
@@ -93,15 +100,23 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} align="center">Cargando...</TableCell>
+                <TableCell colSpan={7 + categorias.length} align="center">Cargando...</TableCell>
               </TableRow>
             ) : (
               sistemas.map((sistema) => (
                 <TableRow key={sistema.id}>
                   <TableCell>{sistema.nombre}</TableCell>
-                  <TableCell>{sistema.horasSoporte ?? "-"}</TableCell>
-                  <TableCell>{sistema.horasDesarrollo ?? "-"}</TableCell>
-                  <TableCell>{sistema.horasModificacion ?? "-"}</TableCell>
+                  {categorias.map(cat => {
+                    const catSistema = sistema.Categoria?.find(c => c.id === cat.id);
+                    console.log("catSistema", catSistema);
+                    return (
+                      <TableCell key={cat.id}>
+                        {catSistema && catSistema.SistemaCategoriaHoras
+                          ? catSistema.SistemaCategoriaHoras.horasContratadas
+                          : "-"}
+                      </TableCell>
+                    );
+                  })}
                   <TableCell>
                     {sistema.fechaDesde
                       ? sistema.fechaDesde.split("-").reverse().join("/")

@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { getSistemas, getResumenHorasMensual } from "../../store/apis/sistemasApi";
 import { getClientes } from "../../store/apis/clientesApi";
+import { getCategorias } from "../../store/apis/categoriasApi";
 import { useSelector } from "react-redux";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, CircularProgress, Box, MenuItem, Select, FormControl, InputLabel, IconButton
 } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
-
-const tiposHora = [
-  { value: "soporte", label: "Soporte" },
-  { value: "desarrollo", label: "Desarrollo" },
-  { value: "modificacion", label: "Modificación" }
-];
 
 const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const user = useSelector(state => state.auth.user);
@@ -23,7 +18,8 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const [mesSeleccionado, setMesSeleccionado] = useState("");
   const [clientes, setClientes] = useState([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState("");
-  const [tipoSeleccionado, setTipoSeleccionado] = useState("soporte");
+  const [categorias, setCategorias] = useState([]);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
 
   useEffect(() => {
     if (user.user.rol === "admin" && clientes.length > 0 && !clienteSeleccionado) {
@@ -32,11 +28,21 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   }, [user, clientes, clienteSeleccionado]);
 
   useEffect(() => {
+    if (categorias.length > 0 && !categoriaSeleccionada) {
+      setCategoriaSeleccionada(categorias[0].nombre);
+    }
+  }, [categorias, categoriaSeleccionada]);
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const { data } = await getSistemas({}, token);
         setSistemas(data);
+
+        const categoriasRes = await getCategorias(token);
+        setCategorias(categoriasRes.data);
+
         const resumenesTemp = {};
 
         let sistemasFiltrados = data;
@@ -64,6 +70,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
       setLoading(false);
     };
     fetchData();
+    // eslint-disable-next-line
   }, [user, token, clienteSeleccionado, clientes]);
 
   useEffect(() => {
@@ -95,27 +102,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
     )
   ).sort();
 
-  // Mapeo para mostrar los campos correctos según tipoSeleccionado
-  const campos = {
-    soporte: {
-      label: "Soporte",
-      contratadas: "horasSoporte",
-      consumidas: "horasSoporteConsumidas",
-      restantes: "horasSoporteRestantes"
-    },
-    desarrollo: {
-      label: "Desarrollo",
-      contratadas: "horasDesarrollo",
-      consumidas: "horasDesarrolloConsumidas",
-      restantes: "horasDesarrolloRestantes"
-    },
-    modificacion: {
-      label: "Modificación",
-      contratadas: "horasModificacion",
-      consumidas: "horasModificacionConsumidas",
-      restantes: "horasModificacionRestantes"
-    }
-  };
+  const categoriasFiltradas = categorias.filter(cat => cat.nombre === categoriaSeleccionada);
 
   return (
     <Box>
@@ -169,12 +156,12 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
             <FormControl sx={{ minWidth: 200 }}>
               <InputLabel>Tipo de Hora</InputLabel>
               <Select
-                value={tipoSeleccionado}
+                value={categoriaSeleccionada}
                 label="Tipo de Hora"
-                onChange={e => setTipoSeleccionado(e.target.value)}
+                onChange={e => setCategoriaSeleccionada(e.target.value)}
               >
-                {tiposHora.map(tipo => (
-                  <MenuItem key={tipo.value} value={tipo.value}>{tipo.label}</MenuItem>
+                {categorias.map(cat => (
+                  <MenuItem key={cat.id} value={cat.nombre}>{cat.nombre}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -184,9 +171,15 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
               <TableHead>
                 <TableRow>
                   <TableCell>Sistema</TableCell>
-                  <TableCell>Contratadas</TableCell>
-                  <TableCell>Consumidas</TableCell>
-                  <TableCell>Restantes</TableCell>
+                  {categoriasFiltradas.map(cat => (
+                    <TableCell key={cat.id} align="center"> Horas Contratadas</TableCell>
+                  ))}
+                  {categoriasFiltradas.map(cat => (
+                    <TableCell key={cat.id + "-consumidas"} align="center">Horas Consumidas</TableCell>
+                  ))}
+                  {categoriasFiltradas.map(cat => (
+                    <TableCell key={cat.id + "-restantes"} align="center">Horas Restantes</TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -194,13 +187,30 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
                   const resumen = (resumenes[sistema.id] || []).find(
                     r => `${r.anio}-${String(r.mes).padStart(2, "0")}` === mesSeleccionado
                   );
-                  const campo = campos[tipoSeleccionado];
                   return (
                     <TableRow key={sistema.id}>
                       <TableCell>{sistema.nombre}</TableCell>
-                      <TableCell>{resumen ? resumen[campo.contratadas] : "-"}</TableCell>
-                      <TableCell>{resumen ? resumen[campo.consumidas] : "-"}</TableCell>
-                      <TableCell>{resumen ? resumen[campo.restantes] : "-"}</TableCell>
+                      {categoriasFiltradas.map(cat => (
+                        <TableCell key={cat.id} align="center">
+                          {resumen
+                            ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasContratadas ?? "-")
+                            : "-"}
+                        </TableCell>
+                      ))}
+                      {categoriasFiltradas.map(cat => (
+                        <TableCell key={cat.id + "-consumidas"} align="center">
+                          {resumen
+                            ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasConsumidas ?? "-")
+                            : "-"}
+                        </TableCell>
+                      ))}
+                      {categoriasFiltradas.map(cat => (
+                        <TableCell key={cat.id + "-restantes"} align="center">
+                          {resumen
+                            ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasRestantes ?? "-")
+                            : "-"}
+                        </TableCell>
+                      ))}
                     </TableRow>
                   );
                 })}
