@@ -230,6 +230,16 @@ const Detalle = (props) => {
     }
   };
 
+  const mostrarNombre = (key) => {
+    if (!key) return "";
+    const fileName = decodeURIComponent(key.split("/").pop());
+    const partes = fileName.split("_");
+    if (partes.length > 2) {
+      return partes.slice(2).join("_");
+    }
+    return fileName;
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
@@ -336,7 +346,7 @@ const Detalle = (props) => {
                   const nombre = decodeURIComponent(key.split("/").pop());
                   return (
                     <ListItem key={key} divider>
-                      <ListItemText primary={nombre} />
+                      <ListItemText primary={mostrarNombre(key)} />
                       <ListItemSecondaryAction>
                         <IconButton edge="end" onClick={() => handleVerArchivo(key)}>
                           <Visibility />
@@ -389,7 +399,7 @@ const Detalle = (props) => {
                               onClick={() => handleVerArchivo(archivo)}
                               sx={{ textTransform: "none", mr: 1 }}
                             >
-                              {decodeURIComponent(archivo.split("/").pop())}
+                              {mostrarNombre(archivo)}
                             </Button>
                           ))}
                         </Box>
@@ -429,7 +439,7 @@ const Detalle = (props) => {
                                   onClick={() => handleVerArchivo(archivo)}
                                   sx={{ textTransform: "none", mr: 1 }}
                                 >
-                                  {decodeURIComponent(archivo.split("/").pop())}
+                                  {mostrarNombre(archivo)}
                                 </Button>
                               ))}
                             </Box>
