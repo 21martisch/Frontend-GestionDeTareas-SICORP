@@ -64,12 +64,20 @@ export const getComentarios = (ticketId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const addComentario = (ticketId, texto, token, parentId = null) =>
-  axios.post(
+export const addComentario = (ticketId, data, token, parentId = null) => {
+  const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+  const config = {
+    headers: { Authorization: `Bearer ${token}` }
+  };
+  if (!isFormData) {
+    config.headers["Content-Type"] = "application/json";
+  }
+  return axios.post(
     `${API_URL}/tickets/${ticketId}/comentarios`,
-    parentId ? { texto, parentId } : { texto },
-    { headers: { Authorization: `Bearer ${token}` } }
+    data,
+    config
   );
+};
 
 export const getArchivoUrlFirmada = (key, token) =>
   axios.get(`${API_URL}/tickets/archivo-url/${encodeURIComponent(key)}`, {

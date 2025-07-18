@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { getSistemas, getResumenHorasMensual } from "../../store/apis/sistemasApi";
 import { getClientes } from "../../store/apis/clientesApi";
+import { getCategorias } from "../../store/apis/categoriasApi";
 import { useSelector } from "react-redux";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, CircularProgress, Box, MenuItem, Select, FormControl, InputLabel, IconButton
 } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
+import { styled } from "@mui/material/styles";
 
-const tiposHora = [
-  { value: "soporte", label: "Soporte" },
-  { value: "desarrollo", label: "Desarrollo" },
-  { value: "modificacion", label: "Modificación" }
-];
+// Estilos comprimidos para la tabla
+const SmallTableCell = styled(TableCell)({
+  padding: "6px 10px",
+  fontSize: "0.95rem",
+});
+const SmallTableRow = styled(TableRow)({
+  height: 36,
+  "&:hover": {
+    background: "#f5f7fa"
+  }
+});
 
 const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const user = useSelector(state => state.auth.user);
@@ -23,7 +31,8 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   const [mesSeleccionado, setMesSeleccionado] = useState("");
   const [clientes, setClientes] = useState([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState("");
-  const [tipoSeleccionado, setTipoSeleccionado] = useState("soporte");
+  const [categorias, setCategorias] = useState([]);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
 
   useEffect(() => {
     if (user.user.rol === "admin" && clientes.length > 0 && !clienteSeleccionado) {
@@ -32,11 +41,21 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
   }, [user, clientes, clienteSeleccionado]);
 
   useEffect(() => {
+    if (categorias.length > 0 && !categoriaSeleccionada) {
+      setCategoriaSeleccionada(categorias[0].nombre);
+    }
+  }, [categorias, categoriaSeleccionada]);
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const { data } = await getSistemas({}, token);
         setSistemas(data);
+
+        const categoriasRes = await getCategorias(token);
+        setCategorias(categoriasRes.data);
+
         const resumenesTemp = {};
 
         let sistemasFiltrados = data;
@@ -64,6 +83,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
       setLoading(false);
     };
     fetchData();
+    // eslint-disable-next-line
   }, [user, token, clienteSeleccionado, clientes]);
 
   useEffect(() => {
@@ -95,27 +115,7 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
     )
   ).sort();
 
-  // Mapeo para mostrar los campos correctos según tipoSeleccionado
-  const campos = {
-    soporte: {
-      label: "Soporte",
-      contratadas: "horasSoporte",
-      consumidas: "horasSoporteConsumidas",
-      restantes: "horasSoporteRestantes"
-    },
-    desarrollo: {
-      label: "Desarrollo",
-      contratadas: "horasDesarrollo",
-      consumidas: "horasDesarrolloConsumidas",
-      restantes: "horasDesarrolloRestantes"
-    },
-    modificacion: {
-      label: "Modificación",
-      contratadas: "horasModificacion",
-      consumidas: "horasModificacionConsumidas",
-      restantes: "horasModificacionRestantes"
-    }
-  };
+  const categoriasFiltradas = categorias.filter(cat => cat.nombre === categoriaSeleccionada);
 
   return (
     <Box>
@@ -131,7 +131,9 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Horas Consumidas</Typography>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.2rem', lg: '1.5rem' } }}>
+          Horas Consumidas
+        </Typography>
       </Box>
       {loading ? (
         <CircularProgress />
@@ -139,69 +141,98 @@ const HorasContrato = ({ isMenuOpen, toggleMenu }) => {
         <>
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
             {user.user.rol === "admin" && (
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel>Cliente</InputLabel>
+              <FormControl sx={{ minWidth: 160 }}>
+                <InputLabel sx={{ fontSize: "0.95rem" }}>Cliente</InputLabel>
                 <Select
                   value={clienteSeleccionado}
                   label="Cliente"
                   onChange={e => setClienteSeleccionado(e.target.value)}
+                  size="small"
+                  sx={{ fontSize: "0.95rem" }}
                 >
                   {clientes.map(cliente => (
-                    <MenuItem key={cliente.id} value={cliente.id}>{cliente.nombre}</MenuItem>
+                    <MenuItem key={cliente.id} value={cliente.id} sx={{ fontSize: "0.95rem" }}>{cliente.nombre}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             )}
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Mes</InputLabel>
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel sx={{ fontSize: "0.95rem" }}>Mes</InputLabel>
               <Select
                 value={mesSeleccionado}
                 label="Mes"
                 onChange={e => setMesSeleccionado(e.target.value)}
+                size="small"
+                sx={{ fontSize: "0.95rem" }}
               >
                 {mesesDisponibles.map(mes => (
-                  <MenuItem key={mes} value={mes}>
+                  <MenuItem key={mes} value={mes} sx={{ fontSize: "0.95rem" }}>
                     {mes.split("-")[1]}/{mes.split("-")[0]}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Tipo de Hora</InputLabel>
+            <FormControl sx={{ minWidth: 140 }}>
+              <InputLabel sx={{ fontSize: "0.95rem" }}>Tipo de Hora</InputLabel>
               <Select
-                value={tipoSeleccionado}
+                value={categoriaSeleccionada}
                 label="Tipo de Hora"
-                onChange={e => setTipoSeleccionado(e.target.value)}
+                onChange={e => setCategoriaSeleccionada(e.target.value)}
+                size="small"
+                sx={{ fontSize: "0.95rem" }}
               >
-                {tiposHora.map(tipo => (
-                  <MenuItem key={tipo.value} value={tipo.value}>{tipo.label}</MenuItem>
+                {categorias.map(cat => (
+                  <MenuItem key={cat.id} value={cat.nombre} sx={{ fontSize: "0.95rem" }}>{cat.nombre}</MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Box>
-          <TableContainer component={Paper}>
-            <Table>
+          <TableContainer component={Paper} sx={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.03)" }}>
+            <Table size="small">
               <TableHead>
-                <TableRow>
-                  <TableCell>Sistema</TableCell>
-                  <TableCell>Contratadas</TableCell>
-                  <TableCell>Consumidas</TableCell>
-                  <TableCell>Restantes</TableCell>
-                </TableRow>
+                <SmallTableRow sx={{ background: "#f5f5f5" }}>
+                  <SmallTableCell>Sistema</SmallTableCell>
+                  {categoriasFiltradas.map(cat => (
+                    <SmallTableCell key={cat.id} align="center">Horas Contratadas</SmallTableCell>
+                  ))}
+                  {categoriasFiltradas.map(cat => (
+                    <SmallTableCell key={cat.id + "-consumidas"} align="center">Horas Consumidas</SmallTableCell>
+                  ))}
+                  {categoriasFiltradas.map(cat => (
+                    <SmallTableCell key={cat.id + "-restantes"} align="center">Horas Restantes</SmallTableCell>
+                  ))}
+                </SmallTableRow>
               </TableHead>
               <TableBody>
                 {sistemasFiltrados.map(sistema => {
                   const resumen = (resumenes[sistema.id] || []).find(
                     r => `${r.anio}-${String(r.mes).padStart(2, "0")}` === mesSeleccionado
                   );
-                  const campo = campos[tipoSeleccionado];
                   return (
-                    <TableRow key={sistema.id}>
-                      <TableCell>{sistema.nombre}</TableCell>
-                      <TableCell>{resumen ? resumen[campo.contratadas] : "-"}</TableCell>
-                      <TableCell>{resumen ? resumen[campo.consumidas] : "-"}</TableCell>
-                      <TableCell>{resumen ? resumen[campo.restantes] : "-"}</TableCell>
-                    </TableRow>
+                    <SmallTableRow key={sistema.id}>
+                      <SmallTableCell>{sistema.nombre}</SmallTableCell>
+                      {categoriasFiltradas.map(cat => (
+                        <SmallTableCell key={cat.id} align="center">
+                          {resumen
+                            ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasContratadas ?? "-")
+                            : "-"}
+                        </SmallTableCell>
+                      ))}
+                      {categoriasFiltradas.map(cat => (
+                        <SmallTableCell key={cat.id + "-consumidas"} align="center">
+                          {resumen
+                            ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasConsumidas ?? "-")
+                            : "-"}
+                        </SmallTableCell>
+                      ))}
+                      {categoriasFiltradas.map(cat => (
+                        <SmallTableCell key={cat.id + "-restantes"} align="center">
+                          {resumen
+                            ? (resumen.categorias.find(c => c.categoria === cat.nombre)?.horasRestantes ?? "-")
+                            : "-"}
+                        </SmallTableCell>
+                      ))}
+                    </SmallTableRow>
                   );
                 })}
               </TableBody>

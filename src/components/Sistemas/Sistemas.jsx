@@ -12,6 +12,20 @@ import {
   getSistemas,
   deleteSistema
 } from "../../store/apis/sistemasApi";
+import { getCategorias } from "../../store/apis/categoriasApi";
+import { styled } from "@mui/material/styles";
+
+// Estilos comprimidos para la tabla
+const SmallTableCell = styled(TableCell)({
+  padding: "6px 10px",
+  fontSize: "0.95rem",
+});
+const SmallTableRow = styled(TableRow)({
+  height: 36,
+  "&:hover": {
+    background: "#f5f7fa"
+  }
+});
 
 const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   const [openModal, setOpenModal] = useState(false);
@@ -22,6 +36,12 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   const { data: sistemas = [], isLoading } = useQuery({
     queryKey: ["sistemas"],
     queryFn: () => getSistemas({}, token).then(res => res.data),
+  });
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: () => getCategorias(token).then(res => res.data),
+    enabled: !!token,
   });
 
   const deleteSistemaMutation = useMutation({
@@ -53,7 +73,7 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
   };
 
   return (
-    <Box >
+    <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         {!isMenuOpen && (
           <IconButton
@@ -66,69 +86,85 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>Sistemas</Typography>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.2rem', lg: '1.5rem' } }}>
+          Sistemas
+        </Typography>
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<Add sx={{ fontSize: 20 }} />}
           onClick={handleAdd}
+          sx={{
+            fontSize: "0.95rem",
+            py: 0.5,
+            px: 2,
+            boxShadow: "none",
+            borderRadius: 2
+          }}
         >
           Agregar Sistema
         </Button>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer component={Paper} sx={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.03)" }}>
+        <Table size="small">
           <TableHead>
-            <TableRow>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Horas Soporte</TableCell>
-              <TableCell>Horas Desarrollo</TableCell>
-              <TableCell>Horas Modificación</TableCell>
-              <TableCell>Fecha Desde</TableCell>
-              <TableCell>Fecha Hasta</TableCell>
-              <TableCell>Clientes Asociados</TableCell>
-              <TableCell>Usuarios Asignados</TableCell>
-              <TableCell align="center">Acciones</TableCell>
-            </TableRow>
+            <SmallTableRow sx={{ background: "#f5f5f5" }}>
+              <SmallTableCell><b>Nombre</b></SmallTableCell>
+              {categorias.map(cat => (
+                <SmallTableCell key={cat.id}><b>{cat.nombre}</b></SmallTableCell>
+              ))}
+              <SmallTableCell><b>Fecha Desde</b></SmallTableCell>
+              <SmallTableCell><b>Fecha Hasta</b></SmallTableCell>
+              <SmallTableCell><b>Clientes Asociados</b></SmallTableCell>
+              <SmallTableCell><b>Usuarios Asignados</b></SmallTableCell>
+              <SmallTableCell align="center"><b>Acciones</b></SmallTableCell>
+            </SmallTableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center">Cargando...</TableCell>
-              </TableRow>
+              <SmallTableRow>
+                <SmallTableCell colSpan={7 + categorias.length} align="center">Cargando...</SmallTableCell>
+              </SmallTableRow>
             ) : (
               sistemas.map((sistema) => (
-                <TableRow key={sistema.id}>
-                  <TableCell>{sistema.nombre}</TableCell>
-                  <TableCell>{sistema.horasSoporte ?? "-"}</TableCell>
-                  <TableCell>{sistema.horasDesarrollo ?? "-"}</TableCell>
-                  <TableCell>{sistema.horasModificacion ?? "-"}</TableCell>
-                  <TableCell>
+                <SmallTableRow key={sistema.id}>
+                  <SmallTableCell>{sistema.nombre}</SmallTableCell>
+                  {categorias.map(cat => {
+                    const catSistema = sistema.Categoria?.find(c => c.id === cat.id);
+                    return (
+                      <SmallTableCell key={cat.id}>
+                        {catSistema && catSistema.SistemaCategoriaHoras
+                          ? catSistema.SistemaCategoriaHoras.horasContratadas
+                          : <span style={{ color: "#bbb" }}>-</span>}
+                      </SmallTableCell>
+                    );
+                  })}
+                  <SmallTableCell>
                     {sistema.fechaDesde
                       ? sistema.fechaDesde.split("-").reverse().join("/")
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
+                      : <span style={{ color: "#bbb" }}>-</span>}
+                  </SmallTableCell>
+                  <SmallTableCell>
                     {sistema.fechaHasta
                       ? sistema.fechaHasta.split("-").reverse().join("/")
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {sistema.Cliente ? sistema.Cliente.nombre : "-"}
-                  </TableCell>
-                  <TableCell>
+                      : <span style={{ color: "#bbb" }}>-</span>}
+                  </SmallTableCell>
+                  <SmallTableCell>
+                    {sistema.Cliente ? sistema.Cliente.nombre : <span style={{ color: "#bbb" }}>-</span>}
+                  </SmallTableCell>
+                  <SmallTableCell>
                     {sistema.usuarios && sistema.usuarios.length > 0
                       ? sistema.usuarios.map(u => u.nombre).join(", ")
-                      : "-"}
-                  </TableCell>
-                  <TableCell align="center">
-                    <IconButton onClick={() => handleEdit(sistema)} title="Editar">
-                      <Edit />
+                      : <span style={{ color: "#bbb" }}>-</span>}
+                  </SmallTableCell>
+                  <SmallTableCell align="center">
+                    <IconButton onClick={() => handleEdit(sistema)} title="Editar" size="small" sx={{ color: "#1976d2" }}>
+                      <Edit sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(sistema.id)} title="Eliminar">
-                      <Delete />
+                    <IconButton onClick={() => handleDelete(sistema.id)} title="Eliminar" size="small" sx={{ color: "#e57373" }}>
+                      <Delete sx={{ fontSize: 18 }} />
                     </IconButton>
-                  </TableCell>
-                </TableRow>
+                  </SmallTableCell>
+                </SmallTableRow>
               ))
             )}
           </TableBody>
@@ -136,7 +172,7 @@ const Sistemas = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
       </TableContainer>
 
       <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingSistema ? "Editar Sistema" : "Agregar Sistema"}</DialogTitle>
+        <DialogTitle sx={{ fontSize: "1.1rem" }}>{editingSistema ? "Editar Sistema" : "Agregar Sistema"}</DialogTitle>
         <DialogContent>
           <CreateSistemas
             sistema={editingSistema}

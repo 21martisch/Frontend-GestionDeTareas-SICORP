@@ -9,6 +9,21 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { styled } from "@mui/material/styles";
+
+// Estilos comprimidos para la tabla
+const SmallTableCell = styled(TableCell)({
+  padding: "4px 8px",
+  fontSize: "0.85rem",
+});
+const SmallTableRow = styled(TableRow)({
+  height: 32,
+});
+const SmallChip = styled(Chip)({
+  fontSize: "0.75rem",
+  height: 22,
+  padding: "0 6px",
+});
 
 const getCategoriaChipStyle = (nombre) => {
   switch (nombre) {
@@ -87,7 +102,7 @@ const TicketsTable = ({
 
   const handleCambiarCategoria = (ticket) => {
     if (
-      ticket.Categorium?.nombre === "Abierto" &&
+      ticket.Estado?.nombre === "Abierto" &&
       !ticket.tomado &&
       !ticket.usuarioAsignado
     ) {
@@ -110,144 +125,144 @@ const TicketsTable = ({
 
   return (
     <>
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer component={Paper} sx={{ boxShadow: "none", mt: 1 }}>
+        <Table size="small">
           <TableHead>
-            <TableRow sx={{ background: "#f5f5f5" }}>
-              <TableCell><b>Id</b></TableCell>
-              <TableCell><b>Prioridad</b></TableCell>
-              <TableCell><b>Sistemas</b></TableCell>
-              <TableCell><b>Título</b></TableCell>
-              <TableCell><b>Usuario Cliente</b></TableCell>
-              <TableCell><b>Fecha</b></TableCell>
-              <TableCell><b>Categoría</b></TableCell>
-              <TableCell><b>Estado</b></TableCell>
+            <SmallTableRow sx={{ background: "#f5f5f5" }}>
+              <SmallTableCell><b>Id</b></SmallTableCell>
+              <SmallTableCell><b>Prioridad</b></SmallTableCell>
+              <SmallTableCell><b>Sistemas</b></SmallTableCell>
+              <SmallTableCell><b>Título</b></SmallTableCell>
+              <SmallTableCell><b>Usuario Cliente</b></SmallTableCell>
+              <SmallTableCell><b>Fecha</b></SmallTableCell>
+              <SmallTableCell><b>Categoría</b></SmallTableCell>
+              <SmallTableCell><b>Estado</b></SmallTableCell>
               { user?.user.rol === "admin" && (
-                <TableCell><b>Tomado</b></TableCell>
+                <SmallTableCell><b>Tomado</b></SmallTableCell>
               )}
-              <TableCell><b>Acciones</b></TableCell>
-            </TableRow>
+              <SmallTableCell><b>Acciones</b></SmallTableCell>
+            </SmallTableRow>
           </TableHead>
           <TableBody>
             {tickets.map((ticket) => (
-              <TableRow key={ticket.id}>
-                <TableCell>{ticket.id}</TableCell>
-                <TableCell>
-                  <Chip
+              <SmallTableRow key={ticket.id}>
+                <SmallTableCell>{ticket.id}</SmallTableCell>
+                <SmallTableCell>
+                  <SmallChip
                     label={ticket.prioridad}
                     color={prioridadColor(ticket.prioridad)}
-                    size="small"
-                    sx={{ fontWeight: 500 }}
                   />
-                </TableCell>
-                <TableCell>
+                </SmallTableCell>
+                <SmallTableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <Settings sx={{ fontSize: 18 }} />
-                    {ticket.Sistema?.nombre || "-"}
+                    <Settings sx={{ fontSize: 16 }} />
+                    <span style={{ fontSize: "0.85rem" }}>{ticket.Sistema?.nombre || "-"}</span>
                   </Box>
-                </TableCell>
-                <TableCell>{ticket.titulo}</TableCell>
-                <TableCell>
+                </SmallTableCell>
+                <SmallTableCell>{ticket.titulo}</SmallTableCell>
+                <SmallTableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <AccountCircle sx={{ fontSize: 18 }} />
-                    {ticket.Usuario?.nombre || "-"} {ticket.Usuario?.apellido || ""}
+                    <AccountCircle sx={{ fontSize: 16 }} />
+                    <span style={{ fontSize: "0.85rem" }}>{ticket.Usuario?.nombre || "-"} {ticket.Usuario?.apellido || ""}</span>
                   </Box>
-                </TableCell>
-                <TableCell>
-                  {new Date(ticket.fechaCreacion).toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    size="small"
-                    label={ticket.categoriaTipo}
-                    color="primary"
-                    sx={{ fontWeight: 500, bgcolor: "#e3f2fd", color: "#1976d2" }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Chip
+                </SmallTableCell>
+                <SmallTableCell>
+                  <span style={{ fontSize: "0.85rem" }}>
+                    {new Date(ticket.fechaCreacion).toLocaleString()}
+                  </span>
+                </SmallTableCell>
+                <SmallTableCell>
+                  <SmallChip
                     label={ticket.Categorium?.nombre || "-"}
-                    sx={getCategoriaChipStyle(ticket.Categorium?.nombre)}
-                    size="small"
+                    color="primary"
+                    sx={{ bgcolor: "#e3f2fd", color: "#1976d2" }}
+                  />
+                </SmallTableCell>
+                <SmallTableCell>
+                  <SmallChip
+                    label={ticket.Estado?.nombre || "-"}
+                    sx={getCategoriaChipStyle(ticket.Estado?.nombre)}
                     clickable={user?.user.rol !== "cliente"}
                     onClick={user?.user.rol !== "cliente" ? () => handleCambiarCategoria(ticket) : undefined}
                   />
-                </TableCell>
+                </SmallTableCell>
                 { user?.user.rol === "admin" && (
-                  <TableCell>
+                  <SmallTableCell>
                     {ticket.tomado && (
                       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                        <CheckCircleOutline sx={{ fontSize: 18 }} />
-                        {ticket.usuarioAsignado || "-"}
+                        <CheckCircleOutline sx={{ fontSize: 16 }} />
+                        <span style={{ fontSize: "0.85rem" }}>{ticket.usuarioAsignado || "-"}</span>
                       </Box>
                     )}
-                  </TableCell>
+                  </SmallTableCell>
                 )}
-                <TableCell>
+                <SmallTableCell>
                   <Box sx={{ display: "flex", gap: 0.5 }}>
-                    {user?.user.rol === "admin" && ticket.Categorium?.nombre !== "Cerrado"  && (
+                    {user?.user.rol === "admin" && ticket.Estado?.nombre !== "Cerrado"  && (
                       <>
                         {!ticket.tomado && (
-                          <IconButton onClick={() => handleTomar(ticket)}  title="Tomar">
-                            <PlayForWork />
+                          <IconButton size="small" onClick={() => handleTomar(ticket)} title="Tomar">
+                            <PlayForWork sx={{ fontSize: 18 }} />
                           </IconButton>
                         )}
-                        <IconButton onClick={() => handleAsignar(ticket)}  title="Asignar">
-                          <Loop />
+                        <IconButton size="small" onClick={() => handleAsignar(ticket)} title="Asignar">
+                          <Loop sx={{ fontSize: 18 }} />
                         </IconButton>
                       </>
                     )}
-                    {ticket.Categorium?.nombre === "Abierto" && (
-                      <IconButton onClick={() => handleOpenModal(ticket)}>
-                        <Edit />
+                    {ticket.Estado?.nombre === "Abierto" && (
+                      <IconButton size="small" onClick={() => handleOpenModal(ticket)}>
+                        <Edit sx={{ fontSize: 18 }} />
                       </IconButton>
                     )}
                     {(
-                      (user?.user.rol === "cliente" && ticket.Categorium?.nombre === "Abierto") ||
+                      (user?.user.rol === "cliente" && ticket.Estado?.nombre === "Abierto") ||
                       (user?.user.rol !== "cliente")
                     ) && (
-                      <IconButton onClick={() => handleDeleteTicket(ticket.id)}>
-                        <Delete />
+                      <IconButton size="small" onClick={() => handleDeleteTicket(ticket.id)}>
+                        <Delete sx={{ fontSize: 18 }} />
                       </IconButton>
                     )}
-                    {user?.user.rol === "admin" && ticket.Categorium?.nombre === "Cerrado" && !ticket.horasCargadas && (
+                    {user?.user.rol === "admin" && ticket.Estado?.nombre === "Cerrado" && !ticket.horasCargadas && (
                       <IconButton
+                        size="small"
                         variant="outlined"
                         color="secondary"
                         onClick={() => onOpenHorasModal(ticket)}
                       >
-                        <HourglassBottom />
+                        <HourglassBottom sx={{ fontSize: 18 }} />
                       </IconButton>
                     )}
                     <IconButton
-                      variant="outlined"
                       size="small"
+                      variant="outlined"
                       onClick={() => navigate(`/historial/${ticket.id}`)}
                     >
-                      <History />
+                      <History sx={{ fontSize: 18 }} />
                     </IconButton>
                     <IconButton
-                      variant="outlined"
                       size="small"
+                      variant="outlined"
                       onClick={() => navigate(`/detalle/${ticket.id}`)}
                     >
-                      <Visibility />
+                      <Visibility sx={{ fontSize: 18 }} />
                     </IconButton>
                   </Box>
-                </TableCell>
-              </TableRow>
+                </SmallTableCell>
+              </SmallTableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
 
       <Dialog open={confirmarTomarOpen} onClose={() => setConfirmarTomarOpen(false)}>
-        <DialogTitle>¿Desea tomar el ticket?</DialogTitle>
+        <DialogTitle sx={{ fontSize: "1rem" }}>¿Desea tomar el ticket?</DialogTitle>
         <DialogActions>
           <Button
             onClick={handleTomarConfirm}
             variant="contained"
             color="primary"
+            sx={{ fontSize: "0.85rem", py: 0.5 }}
           >
             Sí
           </Button>
@@ -257,6 +272,7 @@ const TicketsTable = ({
               setTicketParaTomar(null);
             }}
             variant="outlined"
+            sx={{ fontSize: "0.85rem", py: 0.5 }}
           >
             No
           </Button>
@@ -264,48 +280,52 @@ const TicketsTable = ({
       </Dialog>
 
       <Dialog open={asignarOpen} onClose={() => setAsignarOpen(false)}>
-        <DialogTitle>Asignar ticket a usuario</DialogTitle>
+        <DialogTitle sx={{ fontSize: "1rem" }}>Asignar ticket a usuario</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ minWidth: 200, margin: "8px 0" }}>
-            <InputLabel id="usuario-asignado-label">Usuario</InputLabel>
+            <InputLabel id="usuario-asignado-label" sx={{ fontSize: "0.85rem" }}>Usuario</InputLabel>
             <Select
               labelId="usuario-asignado-label"
               value={usuarioAsignado}
               label="Usuario"
               onChange={e => setUsuarioAsignado(e.target.value)}
+              size="small"
+              sx={{ fontSize: "0.85rem" }}
             >
               {usuariosFiltrados.map(u => (
-                <MenuItem key={u.id} value={u.id}>{u.nombre} ({u.email})</MenuItem>
+                <MenuItem key={u.id} value={u.id} sx={{ fontSize: "0.85rem" }}>{u.nombre} ({u.email})</MenuItem>
               ))}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAsignarOpen(false)}>Cancelar</Button>
-          <Button onClick={handleAsignarConfirm} disabled={!usuarioAsignado}>Asignar</Button>
+          <Button onClick={() => setAsignarOpen(false)} sx={{ fontSize: "0.85rem", py: 0.5 }}>Cancelar</Button>
+          <Button onClick={handleAsignarConfirm} disabled={!usuarioAsignado} sx={{ fontSize: "0.85rem", py: 0.5 }}>Asignar</Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={cambiarCategoriaOpen} onClose={() => setCambiarCategoriaOpen(false)}>
-        <DialogTitle>Cambiar estado/categoría</DialogTitle>
+        <DialogTitle sx={{ fontSize: "1rem" }}>Cambiar estado/categoría</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ minWidth: 200, margin: "8px 0" }}>
-            <InputLabel id="categoria-label">Categoría</InputLabel>
+            <InputLabel id="categoria-label" sx={{ fontSize: "0.85rem" }}>Categoría</InputLabel>
             <Select
               labelId="categoria-label"
               value={categoriaSeleccionada}
               label="Categoría"
               onChange={e => setCategoriaSeleccionada(e.target.value)}
+              size="small"
+              sx={{ fontSize: "0.85rem" }}
             >
               {categorias.map(cat => (
-                <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
+                <MenuItem key={cat.id} value={cat.id} sx={{ fontSize: "0.85rem" }}>{cat.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCambiarCategoriaOpen(false)}>Cancelar</Button>
-          <Button onClick={handleCambiarCategoriaConfirm} disabled={!categoriaSeleccionada || categoriaSeleccionada === (ticketSeleccionado?.categoriaId)}>Cambiar</Button>
+          <Button onClick={() => setCambiarCategoriaOpen(false)} sx={{ fontSize: "0.85rem", py: 0.5 }}>Cancelar</Button>
+          <Button onClick={handleCambiarCategoriaConfirm} disabled={!categoriaSeleccionada || categoriaSeleccionada === (ticketSeleccionado?.categoriaId)} sx={{ fontSize: "0.85rem", py: 0.5 }}>Cambiar</Button>
         </DialogActions>
       </Dialog>
     </>

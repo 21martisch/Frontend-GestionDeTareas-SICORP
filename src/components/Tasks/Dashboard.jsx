@@ -93,9 +93,9 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
     isLoading: loadingCategorias,
     error: errorCategorias,
   } = useQuery({
-    queryKey: ["categorias"],
+    queryKey: ["estado"],
     queryFn: async () => {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/categorias`, {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/estados`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return data;
@@ -119,7 +119,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
 
   const fetchTickets = async () => {
     const usuarioAsignadoNombre = `${user.user.nombre} ${user.user.apellido}`;
-    let params = { page, limit: 10 };
+    let params = { page, limit: 10, soloAbiertos: true };
     if (user?.user.rol === "cliente") params.usuarioId = user.user.id;
     if (activeFilters.categoria) params.categoriaId = activeFilters.categoria;
     if (activeFilters.sistemaFiltro) params.sistemaId = activeFilters.sistemaFiltro;
@@ -356,7 +356,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', lg: '2rem' } }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.2rem', lg: '1.5rem' } }}>
           Panel de Tickets
         </Typography>
         <Button
@@ -417,7 +417,7 @@ const Dashboard = ({ isMenuOpen, toggleMenu, filter, setFilter }) => {
       ) : (
         <>
           <TicketsTable
-            tickets={ticketsData.tickets.filter(t => t.Categorium?.nombre !== "Cerrado" || t.horasCargadas === 0)}
+            tickets={ticketsData.tickets}
             handleOpenModal={handleOpenModal}
             handleDeleteTicket={handleDeleteTicket}
             onTomarTicket={handleTomarTicket}

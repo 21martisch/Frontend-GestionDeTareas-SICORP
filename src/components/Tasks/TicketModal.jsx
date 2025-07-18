@@ -3,17 +3,12 @@ import { useSelector } from "react-redux";
 import { Modal, Box, TextField, Button, MenuItem, Alert, Grid } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { LoadingButton } from "@mui/lab";
+import { getCategorias } from "../../store/apis/categoriasApi";
 
 const prioridades = [
   { value: "Alta", label: "Alta" },
   { value: "Media", label: "Media" },
   { value: "Baja", label: "Baja" },
-];
-
-const categorias = [
-  { value: "Soporte", label: "Soporte" },
-  { value: "Desarrollo", label: "Desarrollo" },
-  { value: "Modificación", label: "Modificación" },
 ];
 
 const extensionesPermitidas = [
@@ -35,10 +30,17 @@ const TicketModal = ({
   const [clienteId, setClienteId] = useState("");
   const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
   const [prioridad, setPrioridad] = useState("");
-  const [categoriaTipo, setCategoriaTipo] = useState("");
+  const [categoriaTipoId, setCategoriaTipoId] = useState("");
   const [alerta, setAlerta] = useState("");
   const usuario = useSelector(state => state.auth.user);
   const [loading, setLoading] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+
+  const token = useSelector(state => state.auth.token);
+
+  useEffect(() => {
+    getCategorias(token).then(res => setCategorias(res.data));
+  }, [token]);
 
   const clienteIdFinal = clientes.length > 0 ? clienteId : usuario?.user?.clienteId;
 
@@ -63,7 +65,7 @@ const TicketModal = ({
       setSistemaId(initialTicket.sistemaId || "");
       setClienteId(initialTicket.clienteId || "");
       setPrioridad(initialTicket.prioridad || "");
-      setCategoriaTipo(initialTicket.categoriaTipo || "");
+      setCategoriaTipoId(initialTicket.categoriaTipoId || "");
     } else {
       setTitulo("");
       setDescripcion("");
@@ -71,7 +73,7 @@ const TicketModal = ({
       setClienteId("");
       setArchivosAdjuntos([]);
       setPrioridad("");
-      setCategoriaTipo("");
+      setCategoriaTipoId("");
     }
     setAlerta("");
   }, [initialTicket, open]);
@@ -108,8 +110,8 @@ const TicketModal = ({
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (!titulo.trim() || !sistemaId) {
-      setAlerta("Debes completar el título y seleccionar un sistema.");
+    if (!titulo.trim() || !sistemaId || !categoriaTipoId) {
+      setAlerta("Debes completar el título, seleccionar un sistema y una categoría.");
       return;
     }
     setAlerta("");
@@ -120,7 +122,7 @@ const TicketModal = ({
       if (descripcion) formData.append("descripcion", descripcion);
       formData.append("sistemaId", sistemaId);
       formData.append("prioridad", prioridad);
-      formData.append("categoriaTipo", categoriaTipo);
+      formData.append("categoriaTipoId", categoriaTipoId);
       if (archivosAdjuntos && archivosAdjuntos.length > 0) {
         archivosAdjuntos.forEach(file => {
           formData.append("archivosAdjuntos", file);
@@ -234,13 +236,13 @@ const TicketModal = ({
               fullWidth
               margin="normal"
               label="Categoría"
-              value={categoriaTipo}
-              onChange={(e) => setCategoriaTipo(e.target.value)}
+              value={categoriaTipoId}
+              onChange={(e) => setCategoriaTipoId(e.target.value)}
               required
             >
-              {categorias.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
+              {categorias.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.nombre}
                 </MenuItem>
               ))}
             </TextField>

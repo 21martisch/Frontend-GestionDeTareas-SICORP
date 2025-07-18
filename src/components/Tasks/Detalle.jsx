@@ -15,10 +15,12 @@ import {
   Modal,
   Divider,
   Grid,
-  Avatar
+  Avatar,
+  Alert
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import { Visibility, AccountCircle } from "@mui/icons-material";
+import { Visibility, AccountCircle, Send, AttachFile } from "@mui/icons-material";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 import useAuth from "../../hooks/useAuth";
 import {
   getTicketById,
@@ -42,6 +44,11 @@ const getCategoriaChipStyle = (nombre) => {
   }
 };
 
+const extensionesPermitidas = [
+  "pdf", "jpg", "jpeg", "png", "xls", "xlsx", "doc", "docx"
+];
+const maxFileSize = 5 * 1024 * 1024;
+
 const Detalle = (props) => {
   const params = useParams();
   const ticketId = props.ticketId || params.ticketId;
@@ -51,6 +58,8 @@ const Detalle = (props) => {
   const { user, token } = useAuth();
   const [comentarios, setComentarios] = useState([]);
   const [nuevoComentario, setNuevoComentario] = useState("");
+  const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
+  const [alertaComentario, setAlertaComentario] = useState("");
   const [responderA, setResponderA] = useState(null);
   const [textoRespuesta, setTextoRespuesta] = useState("");
   const [archivoModalOpen, setArchivoModalOpen] = useState(false);
@@ -58,6 +67,10 @@ const Detalle = (props) => {
   const [archivoSeleccionadoKey, setArchivoSeleccionadoKey] = useState(null);
   const [loadingComentario, setLoadingComentario] = useState(false);
   const [loadingRespuesta, setLoadingRespuesta] = useState(false);
+
+  // Para archivos en respuestas
+  const [archivosRespuesta, setArchivosRespuesta] = useState({});
+  const [alertaRespuesta, setAlertaRespuesta] = useState({});
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -85,14 +98,97 @@ const Detalle = (props) => {
     if (ticketId) fetchComentarios();
   }, [ticketId, token]);
 
+  const handleArchivosComentarioChange = (e) => {
+    const nuevosArchivos = Array.from(e.target.files);
+    let error = "";
+
+    const nombresActuales = archivosAdjuntos.map(f => f.name);
+    const archivosSinDuplicados = nuevosArchivos.filter(f => !nombresActuales.includes(f.name));
+    if (archivosSinDuplicados.length < nuevosArchivos.length) {
+      error = "Algunos archivos ya fueron seleccionados.";
+    }
+
+    for (let file of archivosSinDuplicados) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (!extensionesPermitidas.includes(ext)) {
+        error = "Tipo de archivo no permitido.";
+        break;
+      }
+      if (file.size > maxFileSize) {
+        error = "El archivo supera el tamaño máximo permitido (5MB).";
+        break;
+      }
+    }
+
+    if (error) {
+      setAlertaComentario(error);
+      return;
+    }
+    setArchivosAdjuntos(prev => [...prev, ...archivosSinDuplicados]);
+    setAlertaComentario("");
+  };
+
+  const handleRemoveArchivoComentario = (index) => {
+    setArchivosAdjuntos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Archivos para respuestas
+  const handleArchivosRespuestaChange = (e, comentarioId) => {
+    const nuevosArchivos = Array.from(e.target.files);
+    let error = "";
+
+    const actuales = archivosRespuesta[comentarioId] || [];
+    const nombresActuales = actuales.map(f => f.name);
+    const archivosSinDuplicados = nuevosArchivos.filter(f => !nombresActuales.includes(f.name));
+    if (archivosSinDuplicados.length < nuevosArchivos.length) {
+      error = "Algunos archivos ya fueron seleccionados.";
+    }
+
+    for (let file of archivosSinDuplicados) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (!extensionesPermitidas.includes(ext)) {
+        error = "Tipo de archivo no permitido.";
+        break;
+      }
+      if (file.size > maxFileSize) {
+        error = "El archivo supera el tamaño máximo permitido (5MB).";
+        break;
+      }
+    }
+
+    if (error) {
+      setAlertaRespuesta(prev => ({ ...prev, [comentarioId]: error }));
+      return;
+    }
+    setArchivosRespuesta(prev => ({
+      ...prev,
+      [comentarioId]: [...actuales, ...archivosSinDuplicados]
+    }));
+    setAlertaRespuesta(prev => ({ ...prev, [comentarioId]: "" }));
+  };
+
+  const handleRemoveArchivoRespuesta = (comentarioId, index) => {
+    setArchivosRespuesta(prev => ({
+      ...prev,
+      [comentarioId]: prev[comentarioId].filter((_, i) => i !== index)
+    }));
+  };
+
   const handleNuevoComentario = async (e) => {
     e.preventDefault();
     if (!nuevoComentario.trim()) return;
     setLoadingComentario(true);
     try {
-      const { data } = await addComentario(ticketId, nuevoComentario, token);
+      const formData = new FormData();
+      formData.append("texto", nuevoComentario);
+      archivosAdjuntos.forEach(file => {
+        formData.append("archivosAdjuntos", file);
+      });
+
+      const { data } = await addComentario(ticketId, formData, token);
       setComentarios([...comentarios, data.comentario]);
       setNuevoComentario("");
+      setArchivosAdjuntos([]);
     } catch (error) {}
     setLoadingComentario(false);
   };
@@ -102,7 +198,15 @@ const Detalle = (props) => {
     if (!textoRespuesta.trim()) return;
     setLoadingRespuesta(true);
     try {
-      const { data } = await addComentario(ticketId, textoRespuesta, token, responderA);
+      const formData = new FormData();
+      formData.append("texto", textoRespuesta);
+      formData.append("parentId", responderA);
+      if (archivosRespuesta[responderA] && archivosRespuesta[responderA].length > 0) {
+        archivosRespuesta[responderA].forEach(file => {
+          formData.append("archivosAdjuntos", file);
+        });
+      }
+      const { data } = await addComentario(ticketId, formData, token, responderA);
       setComentarios(comentarios.map(com =>
         com.id === responderA
           ? { ...com, Respuestas: [...(com.Respuestas || []), data.comentario] }
@@ -110,8 +214,30 @@ const Detalle = (props) => {
       ));
       setTextoRespuesta("");
       setResponderA(null);
+      setArchivosRespuesta(prev => ({ ...prev, [responderA]: [] }));
     } catch (error) {}
     setLoadingRespuesta(false);
+  };
+
+  const handleVerArchivo = async (key) => {
+    try {
+      const { data } = await getArchivoUrlFirmada(key, token);
+      setArchivoSeleccionado(data.url);
+      setArchivoSeleccionadoKey(key);
+      setArchivoModalOpen(true);
+    } catch (error) {
+      alert("No se pudo obtener el archivo.");
+    }
+  };
+
+  const mostrarNombre = (key) => {
+    if (!key) return "";
+    const fileName = decodeURIComponent(key.split("/").pop());
+    const partes = fileName.split("_");
+    if (partes.length > 2) {
+      return partes.slice(2).join("_");
+    }
+    return fileName;
   };
 
   if (loading) {
@@ -132,17 +258,6 @@ const Detalle = (props) => {
       </Box>
     );
   }
-
-  const handleVerArchivo = async (key) => {
-    try {
-      const { data } = await getArchivoUrlFirmada(key, token);
-      setArchivoSeleccionado(data.url);
-      setArchivoSeleccionadoKey(key);
-      setArchivoModalOpen(true);
-    } catch (error) {
-      alert("No se pudo obtener el archivo.");
-    }
-  };
 
   return (
     <>
@@ -173,8 +288,8 @@ const Detalle = (props) => {
             <Grid item xs={12} sm={6}>
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Estado:</Typography>
               <Chip
-                label={ticket.Categorium?.nombre || "-"}
-                sx={getCategoriaChipStyle(ticket.Categorium?.nombre)}
+                label={ticket.Estado?.nombre || "-"}
+                sx={getCategoriaChipStyle(ticket.Estado?.nombre)}
                 size="small"
               />
             </Grid>
@@ -196,7 +311,7 @@ const Detalle = (props) => {
             <Grid item xs={12} sm={6}>
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Categoría:</Typography>
               <Chip
-                label={ticket.categoriaTipo || "-"}
+                label={ticket.Categorium?.nombre || "-"}
                 size="small"
                 color="primary"
                 sx={{ fontWeight: 500, bgcolor: "#e3f2fd", color: "#1976d2" }}
@@ -231,7 +346,7 @@ const Detalle = (props) => {
                   const nombre = decodeURIComponent(key.split("/").pop());
                   return (
                     <ListItem key={key} divider>
-                      <ListItemText primary={nombre} />
+                      <ListItemText primary={mostrarNombre(key)} />
                       <ListItemSecondaryAction>
                         <IconButton edge="end" onClick={() => handleVerArchivo(key)}>
                           <Visibility />
@@ -260,10 +375,35 @@ const Detalle = (props) => {
                     </Avatar>
                     <Box>
                       <Typography variant="subtitle2">{com.Usuario?.nombre || "Usuario"}</Typography>
-                      <Typography variant="body2">{com.texto}</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          wordBreak: "break-word",
+                          whiteSpace: "pre-line",
+                          maxWidth: "100%",
+                          overflowWrap: "break-word"
+                        }}
+                      >
+                        {com.texto}
+                      </Typography>
                       <Typography variant="caption" color="textSecondary">
                         {new Date(com.fecha).toLocaleString()}
                       </Typography>
+                      {com.archivosAdjuntos && com.archivosAdjuntos.length > 0 && (
+                        <Box sx={{ mt: 1 }}>
+                          {com.archivosAdjuntos.map((archivo, idx) => (
+                            <Button
+                              key={idx}
+                              size="small"
+                              startIcon={<AttachFileIcon />}
+                              onClick={() => handleVerArchivo(archivo)}
+                              sx={{ textTransform: "none", mr: 1 }}
+                            >
+                              {mostrarNombre(archivo)}
+                            </Button>
+                          ))}
+                        </Box>
+                      )}
                       <Button size="small" onClick={() => setResponderA(com.id)}>Responder</Button>
                     </Box>
                   </Paper>
@@ -275,10 +415,35 @@ const Detalle = (props) => {
                         </Avatar>
                         <Box>
                           <Typography variant="subtitle2">{resp.Usuario?.nombre || "Usuario"}</Typography>
-                          <Typography variant="body2">{resp.texto}</Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              wordBreak: "break-word",
+                              whiteSpace: "pre-line",
+                              maxWidth: "100%",
+                              overflowWrap: "break-word"
+                            }}
+                          >
+                            {resp.texto}
+                          </Typography>
                           <Typography variant="caption" color="textSecondary">
                             {new Date(resp.fecha).toLocaleString()}
                           </Typography>
+                          {resp.archivosAdjuntos && resp.archivosAdjuntos.length > 0 && (
+                            <Box sx={{ mt: 1 }}>
+                              {resp.archivosAdjuntos.map((archivo, idx) => (
+                                <Button
+                                  key={idx}
+                                  size="small"
+                                  startIcon={<AttachFileIcon />}
+                                  onClick={() => handleVerArchivo(archivo)}
+                                  sx={{ textTransform: "none", mr: 1 }}
+                                >
+                                  {mostrarNombre(archivo)}
+                                </Button>
+                              ))}
+                            </Box>
+                          )}
                         </Box>
                       </Paper>
                     </Box>
@@ -293,10 +458,59 @@ const Detalle = (props) => {
                         placeholder="Escribe una respuesta..."
                       />
                       <Button
+                        variant="contained"
+                        size="small"
+                        component="label"
+                        startIcon={<AttachFileIcon />}
+                        sx={{ mt: 1, mb: 1, borderRadius: 2, fontWeight: 500 }}
+                      >
+                        Adjuntar archivos
+                        <input
+                          type="file"
+                          hidden
+                          multiple
+                          onChange={e => handleArchivosRespuestaChange(e, com.id)}
+                        />
+                      </Button>
+                      {archivosRespuesta[com.id] && archivosRespuesta[com.id].length > 0 && (
+                        <Box
+                          sx={{
+                            mb: 2,
+                            maxHeight: 120,
+                            overflowY: 'auto',
+                            border: '1px solid #eee',
+                            borderRadius: 1,
+                            p: 1,
+                            background: '#fafafa'
+                          }}
+                        >
+                          {archivosRespuesta[com.id].map((file, idx) => (
+                            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {file.name}
+                              </span>
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => handleRemoveArchivoRespuesta(com.id, idx)}
+                                sx={{ ml: 1 }}
+                              >
+                                Eliminar
+                              </Button>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                      {alertaRespuesta[com.id] && (
+                        <Box sx={{ mb: 1 }}>
+                          <Alert severity="warning">{alertaRespuesta[com.id]}</Alert>
+                        </Box>
+                      )}
+                      <Button
                         type="submit"
                         size="small"
                         variant="contained"
-                        sx={{ mt: 1 }}
+                        sx={{ m: 2, borderRadius: 2, fontWeight: 600 }}
                         disabled={loadingRespuesta}
                         startIcon={loadingRespuesta ? <CircularProgress size={16} /> : null}
                       >
@@ -316,9 +530,59 @@ const Detalle = (props) => {
                 placeholder="Agregar un comentario..."
               />
               <Button
-                type="submit"
                 variant="contained"
-                sx={{ mt: 1 }}
+                component="label"
+                size="small"
+                startIcon={<AttachFileIcon />}
+                sx={{ mt: 1, mb: 1, borderRadius: 2, fontWeight: 500 }}
+              >
+                Adjuntar archivos
+                <input
+                  type="file"
+                  hidden
+                  multiple
+                  onChange={handleArchivosComentarioChange}
+                />
+              </Button>
+              {archivosAdjuntos && archivosAdjuntos.length > 0 && (
+                <Box
+                  sx={{
+                    mb: 2,
+                    maxHeight: 120,
+                    overflowY: 'auto',
+                    border: '1px solid #eee',
+                    borderRadius: 1,
+                    p: 1,
+                    background: '#fafafa'
+                  }}
+                >
+                  {archivosAdjuntos.map((file, idx) => (
+                    <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {file.name}
+                      </span>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => handleRemoveArchivoComentario(idx)}
+                        sx={{ ml: 1 }}
+                      >
+                        Eliminar
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+              {alertaComentario && (
+                <Box sx={{ mb: 1 }}>
+                  <Alert severity="warning">{alertaComentario}</Alert>
+                </Box>
+              )}
+              <Button
+                type="submit"
+                size="small"
+                variant="contained"
+                sx={{ m: 2, borderRadius: 2, fontWeight: 600 }}
                 disabled={loadingComentario}
                 startIcon={loadingComentario ? <CircularProgress size={18} /> : null}
               >
